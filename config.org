@@ -1,0 +1,876 @@
+#+title: Stupid config for stupid people
+#+author: Ilnar Gazizov (iigaz)
+#+description: Stupid config for stupid people.
+#+options: toc:3
+
+#+begin_example
+
+         /*\           /*\         
+        /---\_       _/---\        
+        (-\---\     /---/-)        
+        |--\-\-\___/-/-/--|        
+        ]-\-_--*****--_-/-[        
+        ]--/∙∙∙∙∙∙∙∙∙∙∙\--[        
+        >-(∙∙∙∙∙∙∙∙∙∙∙∙∙)-<        
+        /_[∙∙∙∙∙∙∙∙∙∙∙∙∙]_\        
+        * [∙∙,^∙∙∙∙∙^.∙∙] *        
+         ][∙(__\_∙_/__)∙][         
+         ]\∙|\_/ v \_/|∙/[         
+         </\|    ‿    |/->         
+          \_v--.___.--,^/          
+           /-~| >v< |~-_\          
+         -- _\]*"-"*[/_  -         
+        (__/-‘---------‘-_)        
+         _/’,~~~.--,/~~.~‘\        
+        (∙∙∙__∙∙∙\/∙∙__∙∙∙)        
+        *--(..\_____/..)--*        
+           \__/     \__/
+
+#+end_example
+
+* Table of Contents                                                     :TOC:
+- [[#essential][Essential]]
+  - [[#package-management][Package management]]
+  - [[#customize][Customize]]
+  - [[#basic-keybindings][Basic keybindings]]
+  - [[#window-management][Window management]]
+  - [[#custom-functions][Custom functions]]
+  - [[#input-fixes][Input fixes]]
+  - [[#editor-behaviour][Editor behaviour]]
+  - [[#undoredo][Undo/Redo]]
+  - [[#multiple-cursors][Multiple cursors]]
+  - [[#org-mode][Org mode]]
+  - [[#markdown][Markdown]]
+  - [[#magit][Magit]]
+  - [[#helpful-niceties][Helpful niceties]]
+  - [[#miscellaneous][Miscellaneous]]
+- [[#cosmetic-fixes][Cosmetic fixes]]
+  - [[#general][General]]
+  - [[#icons][Icons]]
+  - [[#mode-line][Mode line]]
+  - [[#editing-niceties][Editing niceties]]
+- [[#themes][Themes]]
+  - [[#select-light--dark-theme-based-on-system-theme][Select light / dark theme based on system theme]]
+- [[#other-packages][Other packages]]
+  - [[#vterm][Vterm]]
+  - [[#format-on-save][Format on save]]
+  - [[#company][Company]]
+  - [[#flycheck][Flycheck]]
+  - [[#avy][Avy]]
+  - [[#directory-browser][Directory browser]]
+  - [[#restclient][Restclient]]
+  - [[#bells-and-whistles][Bells and whistles]]
+- [[#customizations][Customizations]]
+
+* Essential
+
+** Package management
+
+I'll use the default emacs package manager, with third party
+package repository MELPA (which claims to be the biggest emacs package
+repo). For convenience, I'll also install [[https://github.com/jwiegley/use-package][use-package macro]] for
+managing package configurations.
+
+#+begin_src emacs-lisp
+  (require 'package)
+  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+  (package-initialize)
+
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+
+  (require 'use-package-ensure)
+  (setq use-package-always-ensure t)
+#+end_src
+
+** Customize
+
+Emacs stores customizations done with =customize= commands along with
+a list of *selected* packages in init file by default. This is not
+obvious, and sometimes messes up customizations done later, for
+example here. This code will move the default storage to another file
+and will load it, before any calls of the use-package, so that
+selected packages would be determined by this configuration, not
+random packages I installed once and forgot about.
+
+#+begin_src emacs-lisp
+  ;; File to store customizations done with 'customize'
+  (setq custom-file (concat user-emacs-directory "customize.el"))
+  ;; Load custom file
+  (when (file-readable-p custom-file) (load custom-file))
+
+  ;; Empty package-selected-packages
+  (setq package-selected-packages nil)
+#+end_src
+
+** Basic keybindings
+
+I don't like default emacs keys and don't want to learn vim
+ones. I don't like cua-mode either. The best alternative I've found is
+[[https://github.com/darkstego/wakib-keys/][wakib-keys]]. They make it easy to switch between text editors,
+replacing traditional emacs keybindings with more conventional
+ones, at the cost of moving key prefixes from C-c to C-d and from C-x
+to C-e. I further customized them, more or less taking inspiration
+from vscode, with some functions hacked together by me from various
+snippets from internet.
+
+#+begin_src emacs-lisp
+  (use-package wakib-keys
+    :init
+    (defun wakib-custom-copy-without-region ()
+      "Copy region if there is any, and copy the whole line otherwise."
+      (interactive)
+      (if (use-region-p)
+	  (kill-ring-save (region-beginning) (region-end))
+	(kill-whole-line)
+	(yank)))
+
+    (defun wakib-custom-cut-without-region ()
+      "Cut region if there is any, and cut the whole line otherwise."
+      (interactive)
+      (when (use-region-p)
+	(kill-region (region-beginning) (region-end))))
+
+    (defvar wakib-custom-protected-buffer-list '("*scratch*" "*dashboard*" "*Messages*")
+      "Buffers defined in this list won't be killed with `wakib-custom-kill-buffer', and will be buried instead.")
+
+    (defun wakib-custom-kill-buffer ()
+      "Bury current buffer if it is in `wakib-custom-protected-buffer-list', and kill it otherwise."
+      (interactive)
+      (if (member (buffer-name (current-buffer)) wakib-custom-protected-buffer-list)
+	  (bury-buffer)
+	(kill-buffer (current-buffer))))
+
+    (defun wakib-custom-delete-word (arg)
+      "Delete characters forward until encountering the end of a word.
+      With argument, do this that many times.
+      This command does not push text to `kill-ring'."
+      (interactive "p")
+      (delete-region
+       (point)
+       (progn
+	 (forward-same-syntax arg)
+	 (point))))
+
+    (defun wakib-custom-backward-delete-word (arg)
+      "Delete characters backward until encountering the beginning of a word.
+      With argument, do this that many times.
+      This command does not push text to `kill-ring'."
+      (interactive "p")
+      (wakib-custom-delete-word (- arg)))
+
+    (defun wakib-custom-delete-line ()
+      "Delete text from current position to end of line char.
+      This command does not push text to `kill-ring'."
+      (interactive)
+      (delete-region
+       (point)
+       (progn (end-of-line 1) (point)))
+      (delete-char 1))
+
+    (defun wakib-custom-delete-line-backward ()
+      "Delete text between the beginning of the line to the cursor position.
+      This command does not push text to `kill-ring'."
+      (interactive)
+      (let (p1 p2)
+	(setq p1 (point))
+	(beginning-of-line 1)
+	(setq p2 (point))
+	(delete-region p1 p2)))
+
+    (defun wakib-custom-quit ()
+      "Smart quit, takes windows and daemonp into an account."
+      (interactive)
+      (if (eq (selected-window) (window-main-window (selected-frame)))
+	  (if (daemonp)
+	      (delete-frame)
+	    (when (yes-or-no-p "Are you sure you want to quit GNU Emacs? ")
+	      (save-buffers-kill-terminal)))
+	(delete-window)))
+
+    (defun wakib-custom-switch-to-last-buffer ()
+      "Switches to last buffer."
+      (interactive)
+      (switch-to-buffer nil))
+
+    (setq wakib-keylist
+	  `(("M-j" . left-char)
+	    ("M-l" . right-char)
+	    ("M-i" . previous-line)
+	    ("M-k" . next-line)
+	    ("M-u" . backward-word)
+	    ("M-o" . forward-word)
+	    ("M-;" . wakib-next)
+	    ("M-:" . wakib-previous)
+	    ("M-U" . wakib-back-to-indentation-or-beginning)
+	    ("M-O" . move-end-of-line)
+	    ("M-J" . backward-paragraph)
+	    ("M-L" . forward-paragraph)
+	    ("M-," . backward-sexp)
+	    ("M-." . forward-sexp)
+	    ("M-I" . scroll-down-command)
+	    ("M-K" . scroll-up-command)
+	    ("M-n" . beginning-of-buffer)
+	    ("M-N" . end-of-buffer)
+	    ("C-n" . wakib-new-empty-buffer)
+	    ("C-o" . find-file)
+	    ("C-S-o" . revert-buffer)
+	    ("C-w" . wakib-custom-kill-buffer)
+	    ("C-q" . wakib-custom-quit)
+	    ("C-<next>" . next-buffer)
+	    ("C-<prior>" . previous-buffer)
+	    ("C-c" . wakib-custom-copy-without-region)
+	    ("C-x" . wakib-custom-cut-without-region)
+	    ("C-v" . yank)
+	    ("C-z" . undo-only)
+	    ("C-S-z" . undo-redo)
+	    ("C-y" . undo-redo)
+	    ("C-f" . isearch-forward)
+	    ("C-S-f" . isearch-backward)
+	    ("C-r" . query-replace)
+	    ("C-S-r" . query-replace-regexp)
+	    ("C-s" . save-buffer)
+	    ("C-S-s" . write-file)
+	    ("C-p" . switch-to-buffer)
+	    ("C-S-p" . ibuffer)
+	    ("C-a" . mark-whole-buffer)
+	    ("C-+" . text-scale-increase)
+	    ("C-=" . text-scale-increase)
+	    ("C--" . text-scale-decrease)
+	    ("C-/" . comment-line)
+	    ("M-h" . other-window)
+	    ("M-M" . goto-line)
+	    ("M-4" . split-window-right)
+	    ("M-$" . split-window-below)
+	    ("M-3" . delete-other-windows)
+	    ("M-#" . delete-window)
+	    ("M-e" . backward-kill-word)
+	    ("M-r" . kill-word)
+	    ("M-E" . wakib-backward-kill-line)
+	    ("M-R" . kill-line)
+	    ("M-w" . kill-whole-line)
+	    ("M-<f4>" . save-buffers-kill-emacs)
+	    ("M-d" . delete-backward-char)
+	    ("M-f" . delete-char)
+	    ("M-a" . wakib-select-line-block-all)
+	    ("M-s" . set-mark-command)
+	    ("M-S-s" . set-rectangular-region-anchor)
+	    ("<C-return>" . wakib-insert-line-after)
+	    ("<C-S-return>" . wakib-insert-line-before)
+	    ("M-X" . pp-eval-expression)
+	    ("<C-backspace>" . wakib-custom-backward-delete-word)
+	    ("<C-delete>" . wakib-custom-delete-word)
+	    ("<escape>" . keyboard-quit)
+	    ("<C-tab>" . wakib-custom-switch-to-last-buffer)
+	    ("C-{" . hs-hide-block)
+	    ("C-}" . hs-show-block)))
+    :config
+    (wakib-keys 1))
+#+end_src
+
+** Window management
+
+#+begin_src emacs-lisp
+  ;; Use meta key for windmove
+  (windmove-default-keybindings 'meta)
+
+  (defun ig/split-window-right ()
+    (interactive)
+    (split-window-right)
+    (windmove-right))
+  (defun ig/merge-window-left ()
+    (interactive)
+    (let (buffer (window-buffer))
+      (windmove-left)
+      (windmove-delete-right)
+      (switch-to-buffer buffer)))
+  (defun ig/split-window-down ()
+    (interactive)
+    (split-window-below)
+    (windmove-down))
+  (defun ig/merge-window-up ()
+    (interactive)
+    (let (buffer (window-buffer))
+      (windmove-up)
+      (windmove-delete-down)
+      (switch-to-buffer buffer)))
+
+  (global-set-key (kbd "C-s-<right>") 'ig/split-window-right)
+  (global-set-key (kbd "C-s-<left>") 'ig/merge-window-left)
+  (global-set-key (kbd "C-s-<down>") 'ig/split-window-down)
+  (global-set-key (kbd "C-s-<up>") 'ig/merge-window-up)
+  (global-set-key (kbd "s-f") 'delete-other-windows)
+#+end_src
+
+** Custom functions
+
+#+begin_src emacs-lisp
+  (defun xah-change-bracket-pairs (*p1 *p2 *fromType *toType)
+    "Change bracket pairs from one type to another on current line or selection.
+  For example, change all parenthesis () to square brackets [].
+
+  When called in lisp program, *p1 *p2 are region begin/end position, *fromType or *toType is a string of a bracket pair. ➢ for example: \"()\",  \"[]\", etc.
+  URL `http://ergoemacs.org/emacs/elisp_change_brackets.html'
+  Version 2015-04-12, modified by IG."
+    (interactive
+     (let ((-bracketsList
+	    '("()" "{}" "[]" "<>" "\"\"" "''" "“”" "‘’" "‹›" "«»" "「」" "『』" "【】" "〖〗" "〈〉" "《》" "〔〕" "⦅⦆" "〚〛" "⦃⦄" "〈〉" "⦑⦒" "⧼⧽" "⟦⟧" "⟨⟩" "⟪⟫" "⟮⟯" "⟬⟭" "❛❜" "❝❞" "❨❩" "❪❫" "❴❵" "❬❭" "❮❯" "❰❱")))
+       (if (use-region-p)
+	   (progn (list
+		   (region-beginning)
+		   (region-end)
+		   (ido-completing-read "Replace this:" -bracketsList )
+		   (ido-completing-read "To:" -bracketsList )))
+	 (progn
+	   (list
+	    (line-beginning-position)
+	    (line-end-position)
+	    (ido-completing-read "Replace this:" -bracketsList )
+	    (ido-completing-read "To:" -bracketsList ))))))
+    (let* (
+	   (-findReplaceMap
+	    (vector
+	     (vector (char-to-string (elt *fromType 0)) (char-to-string (elt *toType 0)))
+	     (vector (char-to-string (elt *fromType 1)) (char-to-string (elt *toType 1))))))
+      (save-excursion
+	(save-restriction
+	  (narrow-to-region *p1 *p2)
+	  (let ( (case-fold-search nil))
+	    (mapc
+	     (lambda (-x)
+	       (goto-char (point-min))
+	       (while (search-forward (elt -x 0) nil t)
+		 (replace-match (elt -x 1) 'FIXEDCASE 'LITERAL)))
+	     -findReplaceMap))))))
+
+  (global-set-key (kbd "C-c b") 'xah-change-bracket-pairs)
+#+end_src
+
+** Input fixes
+
+#+begin_src emacs-lisp
+  ;; Enable horizontal scroll (e.g. with touchpad)
+  (setq mouse-wheel-tilt-scroll t)
+  ;; Flip horizontal scroll direction
+  (setq mouse-wheel-flip-direction t)
+
+  ;; Do not disable scroll-left
+  (put 'scroll-left 'disabled nil)
+
+  ;; Map cyrillic layout to qwerty
+  (progn
+    (defun map-jtsuken-to-qwerty (jtsuken qwerty pos)
+      (when (< pos (length jtsuken))
+        (let ((from (aref jtsuken pos))
+              (to (aref qwerty pos)))
+          (define-key key-translation-map (kbd (concat "C-" (string from))) (kbd (concat "C-" (string to))))
+          (define-key key-translation-map (kbd (concat "M-" (string from))) (kbd (concat "M-" (string to)))))
+        (map-jtsuken-to-qwerty jtsuken qwerty (+ 1 pos))))
+
+    (map-jtsuken-to-qwerty
+     "йцукенгшщзхъфывапролджэячсмитьбюЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖ\ЭЯЧСМИТЬБЮ№"
+     "qwertyuiop[]asdfghjkl;'zxcvbnm,.QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>#"
+     0)
+    )
+#+end_src
+
+** Editor behaviour
+
+#+begin_src emacs-lisp
+  ;; Auto-insert bracket pairs
+  (setq electric-pair-pairs '(
+                  (?\{ . ?\})
+                  (?\( . ?\))
+                  (?\[ . ?\])
+                  (?\" . ?\")
+                  ))
+  (add-hook 'prog-mode-hook 'electric-pair-local-mode)
+
+  ;; Delete selected region
+  (delete-selection-mode 1)
+
+  ;; Enable spell check
+  (add-hook 'prog-mode-hook (lambda () (flyspell-prog-mode)))
+  (add-hook 'text-mode-hook (lambda () (flyspell-mode)))
+
+  ;; Enable drag & drop
+  (setq mouse-drag-and-drop-region t)
+
+  ;; Move by word in camel and pascal cases
+  (add-hook 'prog-mode-hook (lambda () (global-subword-mode 1)))
+
+  ;; UTF-8
+  (prefer-coding-system 'utf-8)
+  (set-default-coding-systems 'utf-8)
+  (set-terminal-coding-system 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
+
+  ;; Indentation
+  (setq-default tab-width 4)
+  (setq-default indent-tabs-mode nil) ; spaces instead of tabs
+  (setq-default standard-indent 4)
+  (setq-default electric-indent-inhibit t)
+  (setq backward-delete-char-untabify-method 'nil) ; Do not turn tabs into spaces on backspace
+
+  ;; Clickable URLs
+  (global-goto-address-mode t)
+
+  ;; Increase undo limit
+  (setq undo-limit (* 10 undo-limit))
+  (setq undo-strong-limit (* 10 undo-strong-limit))
+  (setq undo-outer-limit (* 10 undo-outer-limit))
+#+end_src
+
+** Undo/Redo
+
+Default Emacs undo-redo has several limitations. It doesn't store
+history for long, will redo when you undo unless you do undo-only,
+etc. This piece of code adds [[https://codeberg.org/ideasman42/emacs-undo-fu][Undo-fu]] for convenient undo and redo, and
+visual undo ([[https://github.com/casouri/vundo][vundo]]) with tree-like display.
+
+#+begin_src emacs-lisp
+  (use-package vundo
+    :bind (:map wakib-keys-overriding-map
+                ("C-M-z" . vundo))
+    :custom
+    (vundo-glyph-alist vundo-unicode-symbols))
+  (use-package undo-fu
+    :defer t)
+#+end_src
+
+** Multiple cursors
+
+Adds multi-cursor support. Most useful keybinds are below. Tried to
+replicate the ones I'm used to, coming from VSCode.
+
+#+begin_src emacs-lisp
+  (use-package multiple-cursors
+    :defer t
+    :config
+    (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+    (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+    (define-key mc/keymap (kbd "<return>") nil)
+    (define-key mc/keymap (kbd "<mouse-1>") 'mc/keyboard-quit)
+    (global-unset-key (kbd "M-<down-mouse-1>"))
+    (global-set-key (kbd "M-<mouse-1>") 'mc/add-cursor-on-click)
+    (global-unset-key (kbd "<down-mouse-2>"))
+    (global-set-key (kbd "<mouse-2>") 'mc/add-cursor-on-click))
+#+end_src
+
+** Org mode
+
+Not exactly "essential", but still convenient to have it configured
+here than later in the config. Learn more about [[https://orgmode.org/manual/Structure-Templates.html][structure templates]].
+
+#+begin_src emacs-lisp
+  ;; Enable structure templates and add one for elisp code.
+  ;; To use, write "<el" in org mode and press tab.
+  (with-eval-after-load 'org
+    (require 'org-tempo)
+    (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp")))
+
+  ;; Open src edit window (C-d ') fullscreen
+  (setq org-src-window-setup 'current-window)
+
+  ;; Add ToC generator
+  (use-package toc-org
+    :hook ((org-mode markdown-mode) . toc-org-mode))
+#+end_src
+
+** Markdown
+
+#+begin_src emacs-lisp
+  (use-package markdown-mode
+    :mode ("README\\.md\\'" . gfm-mode)
+    :init (setq markdown-command '("pandoc" "--from=markdown" "--katex" "--to=html5"))
+    :custom-face
+    (markdown-header-delimiter-face ((t (:inherit markdown-comment-face))))
+    (markdown-header-face-1 ((t (:inherit (org-level-1 markdown-header-face) :height 1.8))))
+    (markdown-header-face-2 ((t (:inherit (org-level-2 markdown-header-face) :height 1.4))))
+    (markdown-header-face-3 ((t (:inherit (org-level-3 markdown-header-face) :height 1.2))))
+    (markdown-header-face-4 ((t (:inherit (org-level-4 markdown-header-face) :height 1.15))))
+    (markdown-header-face-5 ((t (:inherit (org-level-5 markdown-header-face) :height 1.1))))
+    (markdown-header-face-6 ((t (:inherit (org-level-6 markdown-header-face) :height 1.05))))
+    :config
+    (setq markdown-asymmetric-header t)
+    (setq markdown-indent-on-enter 'indent-and-new-item)
+    (define-key markdown-mode-map (kbd "C-1") 'markdown-insert-header-atx-1)
+    (define-key markdown-mode-map (kbd "C-2") 'markdown-insert-header-atx-2)
+    (define-key markdown-mode-map (kbd "C-3") 'markdown-insert-header-atx-3)
+    (define-key markdown-mode-map (kbd "C-4") 'markdown-insert-header-atx-4)
+    (define-key markdown-mode-map (kbd "C-5") 'markdown-insert-header-atx-5)
+    (define-key markdown-mode-map (kbd "C-6") 'markdown-insert-header-atx-6)
+    (define-key markdown-mode-map (kbd "C-b") 'markdown-insert-bold)
+    (define-key markdown-mode-map (kbd "C-i") 'markdown-insert-italic)
+    (add-hook 'markdown-mode-hook 'visual-line-mode))
+
+  (setq markdown-enable-math t)
+
+  (defvar nb/current-line '(0 . 0)
+    "(start . end) of current line in current buffer")
+  (make-variable-buffer-local 'nb/current-line)
+
+  (defun nb/unhide-current-line (limit)
+    "Font-lock function"
+    (let ((start (max (point) (car nb/current-line)))
+          (end (min limit (cdr nb/current-line))))
+      (when (< start end)
+        (remove-text-properties start end
+                                '(invisible t display "" composition ""))
+        (goto-char limit)
+        t)))
+
+  (defun nb/refontify-on-linemove ()
+    "Post-command-hook"
+    (let* ((start (line-beginning-position))
+           (end (line-beginning-position 2))
+           (needs-update (not (equal start (car nb/current-line)))))
+      (setq nb/current-line (cons start end))
+      (when needs-update
+        (font-lock-fontify-block 3))))
+
+  (defun nb/markdown-unhighlight ()
+    "Enable markdown concealling"
+    (interactive)
+    (markdown-toggle-markup-hiding 'toggle)
+    (font-lock-add-keywords nil '((nb/unhide-current-line)) t)
+    (add-hook 'post-command-hook #'nb/refontify-on-linemove nil t))
+
+  (add-hook 'markdown-mode-hook #'nb/markdown-unhighlight)
+#+end_src
+
+** Magit
+
+A git client, highly recommend. [[https://magit.vc/][Learn more]]. One of the few packages
+worth installing Emacs for.
+
+#+begin_src emacs-lisp
+  (use-package magit :defer t)
+
+  (use-package magit-todos
+    :after (magit)
+    :init
+    (magit-todos-mode))
+#+end_src
+
+** Helpful niceties
+
+Ido (Interactive-Do) is a completion framework. [[https://www.masteringemacs.org/article/introduction-to-ido-mode][Learn more]].
+[[https://github.com/justbur/emacs-which-key][Which-key]] is a helpful window that pops up when you start pressing
+some key chord.
+[[https://github.com/radian-software/ctrlf][CTRLF]] is a package that adds proper search.
+
+#+begin_src emacs-lisp
+  (setq ido-auto-merge-delay-time 5)
+  (setq ido-enable-flex-matching t)
+  (setq ido-enable-tramp-completion nil)
+  (ido-mode t)
+
+  (use-package which-key
+    :defer t
+    :init (which-key-mode))
+
+  (use-package ctrlf
+    :defer t
+    :init (ctrlf-mode +1))
+#+end_src
+
+** Miscellaneous
+
+#+begin_src emacs-lisp
+  ;; Relocate backup files
+  (setq backup-directory-alist `(("." . "~/.emacs-backups")))
+  (setq backup-by-copying t)
+
+  ;; Open bash in ansi-term by default
+  (defvar custom-term-shell "/bin/bash")
+  (defadvice ansi-term (before force-bash)
+    (interactive (list custom-term-shell)))
+  (ad-activate 'ansi-term)
+
+  ;; Do not spam dired buffers when opening folders
+  (setq dired-kill-when-opening-new-dired-buffer t)
+#+end_src
+
+* Cosmetic fixes
+
+** General
+
+#+begin_src emacs-lisp
+  ;; Remove scroll bar
+  (scroll-bar-mode -1)
+  ;; Remove tool bar (the one with big icons)
+  (tool-bar-mode -1)
+
+  ;; Highlight current line
+  (global-hl-line-mode t)
+
+  ;; Enable line numbers, but only in programming modes
+  (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+
+  ;; Enable column number in the mode line
+  (column-number-mode 1) 
+
+  ;; Thin cursor in text modes
+  (add-hook 'text-mode-hook
+            (lambda () (setq cursor-type 'bar)))
+
+  ;; Remove right fringe and enlarge left fringe
+  (fringe-mode '(12 . 0))
+
+  ;; Set the strongest scratch buffer on start-up
+  (setq initial-scratch-message "\n;;         /*\\           /*\\         \n;;        /---\\_       _/---\\        \n;;        (-\\---\\     /---/-)        \n;;        |--\\-\\-\\___/-/-/--|        \n;;        ]-\\-_--*****--_-/-[        \n;;        ]--/∙∙∙∙∙∙∙∙∙∙∙\\--[        \n;;        >-(∙∙∙∙∙∙∙∙∙∙∙∙∙)-<        \n;;        /_[∙∙∙∙∙∙∙∙∙∙∙∙∙]_\\        \n;;        * [∙∙,^∙∙∙∙∙^.∙∙] *        \n;;         ][∙(__\\_∙_/__)∙][         \n;;         ]\\∙|\\_/ v \\_/|∙/[         \n;;         </\\|    ‿    |/->         \n;;          \\_v--.___.--,^/          \n;;           /-~| >v< |~-_\\          \n;;         -- _\\]*\"-\"*[/_  -         \n;;        (__/-`---------`-_)        \n;;         _/\',~~~.--,/~~.~`\\        \n;;        (∙∙∙__∙∙∙\\/∙∙__∙∙∙)        \n;;        *--(..\\_____/..)--*        \n;;           \\__/     \\__/           \n")
+  (setq inhibit-startup-screen t)
+#+end_src
+
+** Icons
+
+[[https://github.com/domtronn/all-the-icons.el][All the icons]] provides a number of functions that insert various
+icons. Some decorative packages require it for their icons. The code
+below also adds icons support to dired.
+
+Important: for the icons to actually work, you need to install the
+fonts first:
+
+#+begin_example
+M-x all-the-icons-install-fonts
+#+end_example
+
+#+begin_src emacs-lisp
+  (use-package all-the-icons
+    :defer t
+    :if (display-graphic-p))
+
+  (use-package all-the-icons-dired
+    :after (all-the-icons)
+    :hook (dired-mode . all-the-icons-dired-mode))
+#+end_src
+
+** Mode line
+
+The standard GUI scrollbar is inconsistent and looks pretty ugly.
+[[https://github.com/jdtsmith/mlscroll][mlscroll]] is a nice lightweight alternative that is actually
+interactive and also works in terminals.
+
+[[https://github.com/tarsius/minions][Minions]] hides all minor modes into one little button.
+
+#+begin_src emacs-lisp
+  (use-package mlscroll
+    :defer t
+    :custom
+    (mlscroll-in-color "DeepSkyBlue")
+    (mlscroll-out-color "")
+    (mlscroll-right-align nil)
+    (mlscroll-alter-percent-position 'replace)
+    :init
+    (mlscroll-mode 1))
+
+  (use-package minions
+    :defer t
+    :config
+    (setq minions-mode-line-lighter "🥞")
+    :init
+    (minions-mode 1))
+#+end_src
+
+** Editing niceties
+
+Most of them really do whatever the name of the package says.
+[[https://elpa.gnu.org/packages/rainbow-mode.html][Rainbow mode]] highlights color names with whatever color they are.
+[[https://github.com/Fanael/rainbow-delimiters][Rainbow delimiters]] paints brackets to different colours, especially
+useful when you're writing lisp.
+
+#+begin_src emacs-lisp
+  (use-package highlight-indent-guides
+    :hook (prog-mode . highlight-indent-guides-mode)
+    :config
+    (setq highlight-indent-guides-method 'character))
+
+  (use-package hl-todo
+    :defer t
+    :init
+    (global-hl-todo-mode))
+
+  (use-package diff-hl
+    :defer t
+    :init
+    (global-diff-hl-mode)
+    :config
+    (add-hook 'magit-pre-refresh-hook 'diff-hl-magit-pre-refresh)
+    (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh))
+
+  (use-package rainbow-mode
+    :defer t
+    :init
+    (add-hook 'prog-mode-hook 'rainbow-mode))
+
+  (use-package rainbow-delimiters
+    :defer t
+    :init
+    (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
+#+end_src
+
+* Themes
+
+** Select light / dark theme based on system theme
+
+#+begin_src emacs-lisp
+  (use-package auto-dark
+    :defer t
+    :custom
+    (auto-dark-light-theme 'tsdh-light)
+    (auto-dark-dark-theme 'modus-vivendi)
+    :init (auto-dark-mode t))
+#+end_src
+
+* Other packages
+
+** Vterm
+
+Vterm is just a better terminal. It's quite laggy, awkward and slow,
+but it's probably the most feature-complete terminal emulator in
+Emacs. An alternative would be to use the built-in ansi-term or (if
+just shell would suffice) eshell.
+
+#+begin_src emacs-lisp
+  (use-package vterm
+    :defer t
+    :config
+    (add-to-list 'display-buffer-alist
+                 '("\*vterm\*"
+                   (display-buffer-in-side-window)
+                   (window-height . 0.25)
+                   (side . bottom)
+                   (slot . 0)))
+    (global-set-key (kbd "C-`") (lambda ()
+                                  (interactive)
+                                  (if (get-buffer-window "\*vterm\*")
+                                      (dolist (buf (buffer-list))
+                                        (when (eq (buffer-local-value 'major-mode buf) 'vterm-mode)
+                                          (with-current-buffer buf
+                                            (bury-buffer))))
+                                    (vterm))))
+    (define-key vterm-mode-map (kbd "C-c d") (lambda () (interactive) (vterm-send "C-d"))))
+#+end_src
+
+** Format on save
+
+[[https://github.com/radian-software/apheleia][Apheleia]] is a nice package that automatically configures formatters
+for modes and formats files on save.
+
+#+begin_src emacs-lisp
+  (use-package apheleia
+    :defer t
+    :init
+    (apheleia-global-mode +1)
+    :config
+    (setf (alist-get 'clang-format apheleia-formatters)
+          '("clang-format" "-style" "Microsoft" "-assume-filename"
+            (or
+             (buffer-file-name)
+             (apheleia-formatters-mode-extension)
+             ".c")))
+    (push '(csharpier "dotnet" "csharpier") apheleia-formatters)
+    (push '(csharp-mode . csharpier) apheleia-mode-alist))
+#+end_src
+
+** Company
+
+[[https://company-mode.github.io/][Company]] is a completion framework. It comes with some configured
+backends, but otherwise needs other packages to provide suggestions.
+[[https://github.com/company-mode/company-quickhelp][Company quickhelp]] is just a pop-up window for suggestions.
+
+#+begin_src emacs-lisp
+  (use-package company :hook (prog-mode . company-mode))
+
+  (use-package company-quickhelp
+    :after (company)
+    :init (company-quickhelp-mode))
+#+end_src
+
+** Flycheck
+
+Syntax checker, a little bit more feature-complete than flymake. [[https://www.flycheck.org/en/latest/][Documentation]].
+
+#+begin_src emacs-lisp
+  (use-package flycheck
+    :hook (prog-mode . flycheck-mode)
+    :config
+    (setq-default flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
+#+end_src
+
+** Avy
+
+[[https://github.com/abo-abo/avy][Avy]] is a useful package for people who are too lazy to move their
+hands away from their keyboard. It allows you to navigate to any point
+on screen by calling avy-goto-char, writing the character you want to
+move to, and writing some other characters to actually move. All in
+all, interesting thing, but usually I'd rather move my right hand onto
+the mouse than bother with it.
+
+#+begin_src emacs-lisp
+  (use-package avy
+    :defer t
+    :config
+    (define-key flyspell-mode-map (kbd "C-;") nil)
+    (global-set-key (kbd "C-;") 'avy-goto-char))
+#+end_src
+
+** Directory browser
+
+I used Treemacs previously, but it's too heavy for me. Instead, I
+found [[https://github.com/jaypei/emacs-neotree][Neotree]], which has minimal dependencies and still works OK.
+
+#+begin_src emacs-lisp
+  (use-package neotree
+    :bind (
+           :map wakib-keys-overriding-map
+           ("C-b" . neotree-toggle)
+           :map neotree-mode-map
+           ("f" . neotree-stretch-toggle)
+           ("." . neotree-hidden-file-toggle))
+    :config
+    (setq neo-theme (if (display-graphic-p) (if (featurep 'all-the-icons) 'icons 'classic) 'arrow)))
+#+end_src
+
+** Restclient
+
+A cool mode for writing rest query templates.
+
+#+begin_src emacs-lisp
+  (use-package restclient
+    :defer t)
+
+  (use-package company-restclient
+    :after (company restclient)
+    :config
+    (add-to-list 'company-backends 'company-restclient)
+    (add-hook 'restclient-mode 'company-mode))
+#+end_src
+
+** Bells and whistles
+
+#+begin_src emacs-lisp
+  ;; M-x fireplace
+  (use-package fireplace :defer t)
+
+  ;; Try package without installing it
+  ;; M-x try
+  (use-package try :defer t)
+#+end_src
+
+* Customizations
+
+Put any other customizations into =custom.el= file in the
+configuration folder.
+
+If you want to use any specific configuration in this folder, just
+include it using function ~ig/load-org-from-user-emacs-directory~ in
+your =custom.el=. This function should be defined in =init.el=, it's
+used to load this file.
+
+#+begin_src emacs-lisp
+  (let ((other-custom-file (expand-file-name "custom.el" user-emacs-directory)))
+    (when (file-readable-p other-custom-file) (load other-custom-file)))
+#+end_src

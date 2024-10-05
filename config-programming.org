@@ -1,0 +1,186 @@
+#+title: General programming modifications and packages
+#+author: Ilnar Gazizov (iigaz)
+
+* LSP
+
+Probably the most useful thing for programming, especially in a
+language or a project you don't know that well.
+
+There is built-in LSP client called eglot, and while people claim it's
+more stable and faster than popular lsp-mode, it doesn't have all the
+features of it, and is less beginner-friendly. I'd like to try eglot
+someday, but for now it's definitely easier to install lsp-mode.
+
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    :defer t
+    :hook ((lsp-mode . lsp-enable-which-key-integration))
+    :custom
+    (lsp-headerline-breadcrumb-enable t)
+    (lsp-ui-doc-border "black")
+    :commands lsp
+    :config
+    (setq lsp-modeline-code-actions-segments '(count icon name)
+          lsp-keep-workspace-alive nil)
+    (define-key lsp-mode-map (kbd "C-.") 'lsp-execute-code-action))
+
+  (use-package lsp-ui
+    :defer t
+    :config
+    (add-hook 'lsp-ui-doc-mode-hook
+              (lambda ()
+                (when lsp-ui-doc-mode
+                  (remove-hook 'post-command-hook #'lsp-ui-doc--make-request t))))
+    (setq lsp-ui-doc-show-with-mouse nil)
+    (setq lsp-ui-doc-show-with-cursor t)
+    :commands lsp-ui-mode)
+#+end_src
+
+* Quickrun
+
+Run current file via =<f5>=. 
+
+#+begin_src emacs-lisp
+  (use-package quickrun
+    :defer t
+    :config
+    (defun quickrun--insert-command (cmd-str)
+      "Not documented."
+      (goto-char (point-max))
+      (insert cmd-str)
+      (eshell-send-input))
+    (defun quickrun--executable-suffix (command)
+      "Not documented."
+      (cond ((string= command "java") ".class")
+            ((quickrun--windows-p) ".exe")
+            (t "")))
+
+    (defun my-quickrun (fnc &rest args)
+      (let ((even-window-heights nil))
+        (apply fnc args)))
+
+    (advice-add 'quickrun :around #'my-quickrun)
+
+    (global-set-key (kbd "<f5>") 'quickrun-shell)
+    (define-key quickrun--eshell-map (kbd "<f5>") (lambda ()
+                                                    (interactive)
+                                                    (quickrun--eshell-window-restore)
+                                                    (quickrun-shell))))
+
+  (defun quickrun--eshell-post-hook ()
+    "Not documented."
+    (let ((rerun-p nil)
+          (prompt "Press 'r' to run again, any other key to finish"))
+      (unwind-protect
+          (ignore-errors
+            (let ((input (read-char prompt)))
+              (when (char-equal input ?r)
+                (quickrun--insert-command quickrun--shell-last-command)
+                (setq rerun-p t))))
+        (unless rerun-p
+          (quickrun--eshell-finish)
+          ;; (read-only-mode +1)
+          (use-local-map quickrun--eshell-map)))))
+#+end_src
+
+* Debug
+
+#+begin_src emacs-lisp
+  (use-package dap-mode
+    :defer t
+    :custom-face
+    (dap-ui-pending-breakpoint-face ((t (:background "gray90"))))
+    (dap-ui-verified-breakpoint-face ((t (:background "RosyBrown1"))))
+    :config
+    (add-hook 'dap-ui-mode-hook (lambda ()
+                                  (define-key dap-ui-mode-map (kbd "<f10>") 'dap-next)
+                                  (define-key dap-ui-mode-map (kbd "<f11>") 'dap-step-in)
+                                  (define-key dap-ui-mode-map (kbd "S-<f11>") 'dap-step-out)
+                                  (define-key dap-ui-mode-map (kbd "S-<f5>") 'dap-continue)))
+    (setq dap-auto-show-output nil
+          dap-output-window-max-height 10)
+    (global-set-key (kbd "C-<f5>") 'dap-debug))
+
+  (with-eval-after-load 'dap-ui
+    (setq dap-ui-buffer-configurations
+          `((,dap-ui--locals-buffer . ((side . left) (slot . 2) (window-width . ,treemacs-width)))
+            (,dap-ui--expressions-buffer . ((side . right) (slot . 2) (window-width . 0.20)))
+            (,dap-ui--sessions-buffer . ((side . right) (slot . 3) (window-width . 0.20)))
+            (,dap-ui--breakpoints-buffer . ((side . left) (slot . 2) (window-width . ,treemacs-width)))
+            (,dap-ui--debug-window-buffer . ((side . bottom) (slot . 3) (window-width . 0.20)))
+            (,dap-ui--repl-buffer . ((side . bottom) (slot . 1) (window-height . 0.45))))))
+
+  (require 'dap-python)
+  (setq dap-python-debugger 'debugpy)
+
+  (require 'dap-cpptools)
+
+  (dap-register-debug-template
+   "cpptools::Run Configuration"
+   (list :type "cppdbg"
+         :request "launch"
+         :name "cpptools::Run Configuration"
+         :MIMode "gdb"
+         :program "${workspaceFolder}/${fileBasenameNoExtension}"
+         :cwd "${workspaceFolder}"))
+
+  (dap-register-debug-template
+   "Debug C++"
+   (list :type "cppdbg"
+         :request "launch"
+         :name "Debug C++"
+         :MIMode "gdb"
+         :program "${fileBasenameNoExtension}"
+         :cwd "${fileDirname}"
+         :stopAtEntry nil
+         :args nil
+         :dap-compilation "g++ -g ${file} -o ${fileDirname}${pathSeparator}${fileBasenameNoExtension}"
+         :setupCommands '((("description" . "Enable pretty-printing for gdb")
+                           ( "text" . "-enable-pretty-printing")
+                           ("ignoreFailures" . "true"))
+                          (("description" . "Set Disassembly Flavor to Intel")
+                           ( "text" . "-gdb-set disassembly-flavor intel")
+                           ("ignoreFailures" . "true")))))
+
+  (setq dap-auto-configure-features '(locals controls tooltip))
+#+end_src
+
+* Smart semicolon
+
+Smart semicolon. Works good for C-like languages.
+
+#+begin_src emacs-lisp
+  (use-package smart-semicolon
+    :defer t
+    :config
+    (add-hook 'c-mode-hook #'smart-semicolon-mode)
+    (add-hook 'c-mode-common-hook #'smart-semicolon-mode)
+    (add-hook 'c++-mode-hook #'smart-semicolon-mode)
+    (add-hook 'java-mode-hook #'smart-semicolon-mode))
+#+end_src
+
+* Editorconfig
+
+Support for .editorconfig files.
+
+#+begin_src emacs-lisp
+  (use-package editorconfig
+    :defer t
+    :config
+    (editorconfig-mode 1))
+#+end_src
+
+* Yasnippet
+
+Snippets for various languages. Easily add your own. Too bad I'm not
+really into snippets, but still use them once in a while.
+
+#+begin_src emacs-lisp
+  (use-package yasnippet
+    :defer t
+    :init
+    (yas-global-mode 1))
+
+  (use-package yasnippet-snippets
+    :defer t)
+#+end_src
