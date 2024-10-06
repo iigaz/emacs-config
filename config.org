@@ -679,7 +679,8 @@ interactive and also works in terminals.
 Most of them really do whatever the name of the package says.
 [[https://elpa.gnu.org/packages/rainbow-mode.html][Rainbow mode]] highlights color names with whatever color they are.
 [[https://github.com/Fanael/rainbow-delimiters][Rainbow delimiters]] paints brackets to different colours, especially
-useful when you're writing lisp.
+useful when you're writing lisp. [[https://github.com/joaotavora/darkroom][Darkroom]] is for text modes, for
+optional "Zen mode"-like experience.
 
 #+begin_src emacs-lisp
   (use-package highlight-indent-guides
@@ -709,6 +710,9 @@ useful when you're writing lisp.
     :defer t
     :init
     (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
+
+  (use-package darkroom
+    :bind (("C-c d" . darkroom-tentative-mode)))
 #+end_src
 
 * Themes
