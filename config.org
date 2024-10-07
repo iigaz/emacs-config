@@ -815,10 +815,8 @@ the mouse than bother with it.
 
 #+begin_src emacs-lisp
   (use-package avy
-    :defer t
-    :config
-    (define-key flyspell-mode-map (kbd "C-;") nil)
-    (global-set-key (kbd "C-;") 'avy-goto-char))
+    :bind (:map wakib-keys-overriding-map
+                ("C-;" . avy-goto-char)))
 #+end_src
 
 ** Directory browser
