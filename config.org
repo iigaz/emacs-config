@@ -446,7 +446,6 @@ replicate the ones I'm used to, coming from VSCode.
 
 #+begin_src emacs-lisp
   (use-package multiple-cursors
-    :defer t
     :config
     (global-set-key (kbd "C->") 'mc/mark-next-like-this)
     (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
@@ -657,7 +656,6 @@ interactive and also works in terminals.
 
 #+begin_src emacs-lisp
   (use-package mlscroll
-    :defer t
     :custom
     (mlscroll-in-color "DeepSkyBlue")
     (mlscroll-out-color "")
@@ -815,8 +813,9 @@ the mouse than bother with it.
 
 #+begin_src emacs-lisp
   (use-package avy
-    :bind (:map wakib-keys-overriding-map
-                ("C-;" . avy-goto-char)))
+    :bind (("C-;" . avy-goto-char)
+           :map flyspell-mode-map
+           ("C-;" . nil)))
 #+end_src
 
 ** Directory browser
