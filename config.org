@@ -39,6 +39,7 @@
   - [[#editor-behaviour][Editor behaviour]]
   - [[#undoredo][Undo/Redo]]
   - [[#multiple-cursors][Multiple cursors]]
+  - [[#dired][Dired]]
   - [[#org-mode][Org mode]]
   - [[#markdown][Markdown]]
   - [[#magit][Magit]]
@@ -457,6 +458,36 @@ replicate the ones I'm used to, coming from VSCode.
     (global-set-key (kbd "<mouse-2>") 'mc/add-cursor-on-click))
 #+end_src
 
+** Dired
+
+Dired is literally an interactive =ls=. =dired-find-alternate-file=
+will prevent dired buffers from appearing all over the
+place. ~<mouse-1>~ translates to ~<mouse-2>~, and the latter is mapped
+to =dired-find-alternate-file=.
+
+Ls-lisp section is needed for sorting folders first, then files.
+
+#+begin_src emacs-lisp
+  (use-package dired
+    :ensure nil
+    :custom
+    (dired-listing-switches "-hal1")
+    (delete-by-moving-to-trash t)
+    (dired-recursive-deletes 'always)
+    (dired-recursive-copies 'always)
+    :config
+    (put 'dired-find-alternate-file 'disabled nil)
+    :hook
+    (dired-mode . (lambda ()
+                    (local-set-key (kbd "<mouse-2>") #'dired-find-alternate-file))))
+
+  (use-package ls-lisp
+    :ensure nil
+    :config
+    (setq ls-lisp-dirs-first t)
+    (setq ls-lisp-use-insert-directory-program nil))
+#+end_src
+
 ** Org mode
 
 Not exactly "essential", but still convenient to have it configured
@@ -587,9 +618,6 @@ some key chord.
   (defadvice ansi-term (before force-bash)
     (interactive (list custom-term-shell)))
   (ad-activate 'ansi-term)
-
-  ;; Do not spam dired buffers when opening folders
-  (setq dired-kill-when-opening-new-dired-buffer t)
 #+end_src
 
 * Cosmetic fixes
