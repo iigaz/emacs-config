@@ -89,32 +89,30 @@ managing package configurations.
 
 Emacs stores customizations done with =customize= commands along with
 a list of *selected* packages in init file by default. This is not
-obvious, and sometimes messes up customizations done later, for
-example here. This code will move the default storage to another file
-and will load it, before any calls of the use-package, so that
-selected packages would be determined by this configuration, not
-random packages I installed once and forgot about.
+obvious, and sometimes messes up customizations.
+
+I really don't recommend using =customize=, and instead write everything
+in =use-package :custom=, but if you really need to use it, this code
+moves them to another file (~customize.el~) and loads it before any
+configurations with =use-package= are called.
 
 #+begin_src emacs-lisp
   ;; File to store customizations done with 'customize'
   (setq custom-file (concat user-emacs-directory "customize.el"))
   ;; Load custom file
   (when (file-readable-p custom-file) (load custom-file))
-
-  ;; Empty package-selected-packages
-  (setq package-selected-packages nil)
 #+end_src
 
 ** Basic keybindings
 
-I don't like default emacs keys and don't want to learn vim
-ones. I don't like cua-mode either. The best alternative I've found is
+I don't like default emacs keys and don't want to learn vim.
+I don't like cua-mode either. The best alternative I've found is
 [[https://github.com/darkstego/wakib-keys/][wakib-keys]]. They make it easy to switch between text editors,
 replacing traditional emacs keybindings with more conventional
 ones, at the cost of moving key prefixes from C-c to C-d and from C-x
 to C-e. I further customized them, more or less taking inspiration
-from vscode, with some functions hacked together by me from various
-snippets from internet.
+from vscode, with some functions hacked together from various
+snippets I've taken on the internet.
 
 #+begin_src emacs-lisp
   (use-package wakib-keys
@@ -272,6 +270,19 @@ snippets from internet.
 
 ** Window management
 
+=windmove= is a built-in package that makes it easy to manage
+windows. I've also wrote some functions that make simple window
+management a breeze for me.
+
+| Keys       | Action                                       |
+|------------+----------------------------------------------|
+| C-arrows   | Move to adjacent window in some direction    |
+| C-s-up     | Merge current window with window above       |
+| C-s-down   | Split current window down                    |
+| C-s-left   | Merge current window with window on the left |
+| C-s-right  | Split current window right                   |
+| s-f        | Remove all windows except current            |
+
 #+begin_src emacs-lisp
   ;; Use meta key for windmove
   (windmove-default-keybindings 'meta)
@@ -282,20 +293,20 @@ snippets from internet.
     (windmove-right))
   (defun ig/merge-window-left ()
     (interactive)
-    (let (buffer (window-buffer))
+    (let ((buffer (window-buffer)))
       (windmove-left)
       (windmove-delete-right)
-      (switch-to-buffer buffer)))
+      (set-window-buffer (selected-window) buffer)))
   (defun ig/split-window-down ()
     (interactive)
     (split-window-below)
     (windmove-down))
   (defun ig/merge-window-up ()
     (interactive)
-    (let (buffer (window-buffer))
+    (let ((buffer (window-buffer)))
       (windmove-up)
       (windmove-delete-down)
-      (switch-to-buffer buffer)))
+      (set-window-buffer (selected-window) buffer)))
 
   (global-set-key (kbd "C-s-<right>") 'ig/split-window-right)
   (global-set-key (kbd "C-s-<left>") 'ig/merge-window-left)
@@ -305,6 +316,8 @@ snippets from internet.
 #+end_src
 
 ** Custom functions
+
+Random functions I've found on the Internet or have written myself.
 
 #+begin_src emacs-lisp
   (defun xah-change-bracket-pairs (*p1 *p2 *fromType *toType)
@@ -378,6 +391,8 @@ snippets from internet.
 
 ** Editor behaviour
 
+General fixes for the editor.
+
 #+begin_src emacs-lisp
   ;; Auto-insert bracket pairs
   (setq electric-pair-pairs '(
@@ -443,7 +458,7 @@ visual undo ([[https://github.com/casouri/vundo][vundo]]) with tree-like display
 ** Multiple cursors
 
 Adds multi-cursor support. Most useful keybinds are below. Tried to
-replicate the ones I'm used to, coming from VSCode.
+replicate the ones I'm used to from other editors.
 
 #+begin_src emacs-lisp
   (use-package multiple-cursors
