@@ -329,45 +329,83 @@ Random functions I've found on the Internet or have written myself.
   Version 2015-04-12, modified by IG."
     (interactive
      (let ((-bracketsList
-	    '("()" "{}" "[]" "<>" "\"\"" "''" "“”" "‘’" "‹›" "«»" "「」" "『』" "【】" "〖〗" "〈〉" "《》" "〔〕" "⦅⦆" "〚〛" "⦃⦄" "〈〉" "⦑⦒" "⧼⧽" "⟦⟧" "⟨⟩" "⟪⟫" "⟮⟯" "⟬⟭" "❛❜" "❝❞" "❨❩" "❪❫" "❴❵" "❬❭" "❮❯" "❰❱")))
+            '("()" "{}" "[]" "<>" "\"\"" "''" "“”" "‘’" "‹›" "«»" "「」" "『』" "【】" "〖〗" "〈〉" "《》" "〔〕" "⦅⦆" "〚〛" "⦃⦄" "〈〉" "⦑⦒" "⧼⧽" "⟦⟧" "⟨⟩" "⟪⟫" "⟮⟯" "⟬⟭" "❛❜" "❝❞" "❨❩" "❪❫" "❴❵" "❬❭" "❮❯" "❰❱")))
        (if (use-region-p)
-	   (progn (list
-		   (region-beginning)
-		   (region-end)
-		   (ido-completing-read "Replace this:" -bracketsList )
-		   (ido-completing-read "To:" -bracketsList )))
-	 (progn
-	   (list
-	    (line-beginning-position)
-	    (line-end-position)
-	    (ido-completing-read "Replace this:" -bracketsList )
-	    (ido-completing-read "To:" -bracketsList ))))))
+           (progn (list
+                   (region-beginning)
+                   (region-end)
+                   (ido-completing-read "Replace this:" -bracketsList )
+                   (ido-completing-read "To:" -bracketsList )))
+         (progn
+           (list
+            (line-beginning-position)
+            (line-end-position)
+            (ido-completing-read "Replace this:" -bracketsList )
+            (ido-completing-read "To:" -bracketsList ))))))
     (let* (
-	   (-findReplaceMap
-	    (vector
-	     (vector (char-to-string (elt *fromType 0)) (char-to-string (elt *toType 0)))
-	     (vector (char-to-string (elt *fromType 1)) (char-to-string (elt *toType 1))))))
+           (-findReplaceMap
+            (vector
+             (vector (char-to-string (elt *fromType 0)) (char-to-string (elt *toType 0)))
+             (vector (char-to-string (elt *fromType 1)) (char-to-string (elt *toType 1))))))
       (save-excursion
-	(save-restriction
-	  (narrow-to-region *p1 *p2)
-	  (let ( (case-fold-search nil))
-	    (mapc
-	     (lambda (-x)
-	       (goto-char (point-min))
-	       (while (search-forward (elt -x 0) nil t)
-		 (replace-match (elt -x 1) 'FIXEDCASE 'LITERAL)))
-	     -findReplaceMap))))))
+        (save-restriction
+          (narrow-to-region *p1 *p2)
+          (let ( (case-fold-search nil))
+            (mapc
+             (lambda (-x)
+               (goto-char (point-min))
+               (while (search-forward (elt -x 0) nil t)
+                 (replace-match (elt -x 1) 'FIXEDCASE 'LITERAL)))
+             -findReplaceMap))))))
 
   (global-set-key (kbd "C-c b") 'xah-change-bracket-pairs)
+
+  (defun ig/save-image-from-clipboard (filepath &optional mimetype)
+    "Save an image from clipboard to the `filepath' with type `mimetype',
+  or image/png if none provided. Only works on linux."
+    (interactive
+     (list
+      (ido-read-file-name "File to save to:")
+      (read-string "Mimetype:" "image/png")))
+    (let* ((mimetype (or mimetype "image/png"))
+           (command (concat "xclip -selection clipboard -t " mimetype " -o > \"" filepath "\"")))
+      (message (concat "Executing " command))
+      (shell-command command)))
+
+  (defun ig/paste-image-from-clipboard (folder-to-save-to/)
+    "If clipboard contains image, try to save it to the same folder
+  the current file is in and return the resulting filepath.
+  If clipboard contains image in multiple formats,
+  it will pick the first one it finds.
+  Returns nil if clipboard doesn't contain any image.
+  Uses `ig/save-image-from-clipboard', thus only works on linux."
+    (interactive (list (ido-read-directory-name "Save image to:")))
+    (let* ((image-types-list (seq-filter
+                              (lambda (type)
+                                (pcase-let ((`(,major ,minor) (split-string (symbol-name type) "/")))
+                                  (if (equal major "image")
+                                      type
+                                    nil)))
+                              (gui-get-selection 'CLIPBOARD 'TARGETS)))
+           (image-mimetype (car-safe image-types-list)))
+      (when image-mimetype
+        (let* ((extension (cond ((eq image-mimetype 'image/png) ".png")
+                                ((or (eq image-mimetype 'image/jpeg) (eq image-mimetype 'image/jpg)) ".jpg")
+                                ((eq image-mimetype 'image/webp) ".webp")
+                                (t "")))
+               (filename (format-time-string (concat "%Y%m%d%H%M%S%3N" extension) (current-time)))
+               (filepath (concat folder-to-save-to/ filename)))
+          (ig/save-image-from-clipboard filepath)
+          filepath))))
 #+end_src
 
 ** Input fixes
 
+Fixes some input annoyances, sometimes may also introduce them.
+
 #+begin_src emacs-lisp
   ;; Enable horizontal scroll (e.g. with touchpad)
   (setq mouse-wheel-tilt-scroll t)
-  ;; Flip horizontal scroll direction
-  (setq mouse-wheel-flip-direction t)
 
   ;; Do not disable scroll-left
   (put 'scroll-left 'disabled nil)
@@ -525,6 +563,14 @@ here than later in the config. Learn more about [[https://orgmode.org/manual/Str
 
 ** Markdown
 
+I like and write markdown a lot. And I don't get the hype for
+org-mode, so I use it only for this literate config. Markdown for
+everything else.
+
+Emacs is a really nice editing environment for markdown, especially if
+you configure it correctly. I've also wrote some functions to paste
+images to the same folder the markdown file is in.
+
 #+begin_src emacs-lisp
   (use-package markdown-mode
     :mode ("README\\.md\\'" . gfm-mode)
@@ -540,6 +586,7 @@ here than later in the config. Learn more about [[https://orgmode.org/manual/Str
     :config
     (setq markdown-asymmetric-header t)
     (setq markdown-indent-on-enter 'indent-and-new-item)
+    (setq markdown-enable-math t)
     (define-key markdown-mode-map (kbd "C-1") 'markdown-insert-header-atx-1)
     (define-key markdown-mode-map (kbd "C-2") 'markdown-insert-header-atx-2)
     (define-key markdown-mode-map (kbd "C-3") 'markdown-insert-header-atx-3)
@@ -548,41 +595,62 @@ here than later in the config. Learn more about [[https://orgmode.org/manual/Str
     (define-key markdown-mode-map (kbd "C-6") 'markdown-insert-header-atx-6)
     (define-key markdown-mode-map (kbd "C-b") 'markdown-insert-bold)
     (define-key markdown-mode-map (kbd "C-i") 'markdown-insert-italic)
-    (add-hook 'markdown-mode-hook 'visual-line-mode))
+    (add-hook 'markdown-mode-hook 'visual-line-mode)
 
-  (setq markdown-enable-math t)
 
-  (defvar nb/current-line '(0 . 0)
-    "(start . end) of current line in current buffer")
-  (make-variable-buffer-local 'nb/current-line)
+    (defvar nb/current-line '(0 . 0)
+      "(start . end) of current line in current buffer")
+    (make-variable-buffer-local 'nb/current-line)
 
-  (defun nb/unhide-current-line (limit)
-    "Font-lock function"
-    (let ((start (max (point) (car nb/current-line)))
-          (end (min limit (cdr nb/current-line))))
-      (when (< start end)
-        (remove-text-properties start end
-                                '(invisible t display "" composition ""))
-        (goto-char limit)
-        t)))
+    (defun nb/unhide-current-line (limit)
+      "Font-lock function"
+      (let ((start (max (point) (car nb/current-line)))
+            (end (min limit (cdr nb/current-line))))
+        (when (< start end)
+          (remove-text-properties start end
+                                  '(invisible t display "" composition ""))
+          (goto-char limit)
+          t)))
 
-  (defun nb/refontify-on-linemove ()
-    "Post-command-hook"
-    (let* ((start (line-beginning-position))
-           (end (line-beginning-position 2))
-           (needs-update (not (equal start (car nb/current-line)))))
-      (setq nb/current-line (cons start end))
-      (when needs-update
-        (font-lock-fontify-block 3))))
+    (defun nb/refontify-on-linemove ()
+      "Post-command-hook"
+      (let* ((start (line-beginning-position))
+             (end (line-beginning-position 2))
+             (needs-update (not (equal start (car nb/current-line)))))
+        (setq nb/current-line (cons start end))
+        (when needs-update
+          (font-lock-fontify-block 3))))
 
-  (defun nb/markdown-unhighlight ()
-    "Enable markdown concealling"
-    (interactive)
-    (markdown-toggle-markup-hiding 'toggle)
-    (font-lock-add-keywords nil '((nb/unhide-current-line)) t)
-    (add-hook 'post-command-hook #'nb/refontify-on-linemove nil t))
+    (defun nb/markdown-unhighlight ()
+      "Enable markdown concealling"
+      (interactive)
+      (markdown-toggle-markup-hiding 'toggle)
+      (font-lock-add-keywords nil '((nb/unhide-current-line)) t)
+      (add-hook 'post-command-hook #'nb/refontify-on-linemove nil t))
 
-  (add-hook 'markdown-mode-hook #'nb/markdown-unhighlight)
+    (add-hook 'markdown-mode-hook #'nb/markdown-unhighlight))
+
+  (define-minor-mode ig/markdown-paste-images
+    "Allows you to paste images in markdown documents, straight from the clipboard.
+  Alas, only works on linux.")
+
+  (defun ig/markdown-paste-image-from-clipboard-advice (orig-func args)
+    (unless buffer-file-name
+      (error "Could not determine the folder to paste image to"))
+    (let* ((current-folder (file-name-directory buffer-file-name))
+           (pasted-image-filepath (ig/paste-image-from-clipboard current-folder)))
+      (if pasted-image-filepath
+          (insert (concat "![](./" (file-name-nondirectory pasted-image-filepath) ")"))
+        (apply orig-func args))))
+
+  (defun ig/markdown-paste-image-advice-helper (orig-func &rest args)
+    (if ig/markdown-paste-images
+        (ig/markdown-paste-image-from-clipboard-advice orig-func args)
+      (apply orig-func args)))
+
+  (advice-add 'yank :around #'ig/markdown-paste-image-advice-helper)
+
+  (add-hook 'markdown-mode-hook 'ig/markdown-paste-images)
 #+end_src
 
 ** Magit
@@ -623,6 +691,8 @@ some key chord.
 
 ** Miscellaneous
 
+Some random emacs configurations.
+
 #+begin_src emacs-lisp
   ;; Relocate backup files
   (setq backup-directory-alist `(("." . "~/.emacs-backups")))
@@ -638,6 +708,8 @@ some key chord.
 * Cosmetic fixes
 
 ** General
+
+Making Emacs look better.
 
 #+begin_src emacs-lisp
   ;; Remove scroll bar
@@ -760,6 +832,10 @@ optional "Zen mode"-like experience.
 
 ** Select light / dark theme based on system theme
 
+I usually just use light theme, but sometimes I enable dark theme
+system-wide. To reflect these changes dynamically in Emacs, I use
+[[https://github.com/LionyxML/auto-dark-emacs][auto-dark-emacs]].
+
 #+begin_src emacs-lisp
   (use-package auto-dark
     :defer t
@@ -880,7 +956,7 @@ found [[https://github.com/jaypei/emacs-neotree][Neotree]], which has minimal de
 
 ** Restclient
 
-A cool mode for writing rest query templates.
+A cool mode for writing http requests.
 
 #+begin_src emacs-lisp
   (use-package restclient
@@ -894,6 +970,9 @@ A cool mode for writing rest query templates.
 #+end_src
 
 ** Bells and whistles
+
+Some small packages that no one really needs but they're sometimes
+cool to have.
 
 #+begin_src emacs-lisp
   ;; M-x fireplace
