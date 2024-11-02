@@ -380,23 +380,25 @@ Random functions I've found on the Internet or have written myself.
   Returns nil if clipboard doesn't contain any image.
   Uses `ig/save-image-from-clipboard', thus only works on linux."
     (interactive (list (ido-read-directory-name "Save image to:")))
-    (let* ((image-types-list (seq-filter
-                              (lambda (type)
-                                (pcase-let ((`(,major ,minor) (split-string (symbol-name type) "/")))
-                                  (if (equal major "image")
-                                      type
-                                    nil)))
-                              (gui-get-selection 'CLIPBOARD 'TARGETS)))
-           (image-mimetype (car-safe image-types-list)))
-      (when image-mimetype
-        (let* ((extension (cond ((eq image-mimetype 'image/png) ".png")
-                                ((or (eq image-mimetype 'image/jpeg) (eq image-mimetype 'image/jpg)) ".jpg")
-                                ((eq image-mimetype 'image/webp) ".webp")
-                                (t "")))
-               (filename (format-time-string (concat "%Y%m%d%H%M%S%3N" extension) (current-time)))
-               (filepath (concat folder-to-save-to/ filename)))
-          (ig/save-image-from-clipboard filepath)
-          filepath))))
+    (let ((clipboard-contents (gui-get-selection 'CLIPBOARD 'TARGETS)))
+      (when (sequencep clipboard-contents)
+        (let* ((image-types-list (seq-filter
+                                  (lambda (type)
+                                    (pcase-let ((`(,major ,minor) (split-string (symbol-name type) "/")))
+                                      (if (equal major "image")
+                                          type
+                                        nil)))
+                                  clipboard-contents))
+               (image-mimetype (car-safe image-types-list)))
+          (when image-mimetype
+            (let* ((extension (cond ((eq image-mimetype 'image/png) ".png")
+                                    ((or (eq image-mimetype 'image/jpeg) (eq image-mimetype 'image/jpg)) ".jpg")
+                                    ((eq image-mimetype 'image/webp) ".webp")
+                                    (t "")))
+                   (filename (format-time-string (concat "%Y%m%d%H%M%S%3N" extension) (current-time)))
+                   (filepath (concat folder-to-save-to/ filename)))
+              (ig/save-image-from-clipboard filepath)
+              filepath))))))
 #+end_src
 
 ** Input fixes
@@ -635,9 +637,8 @@ images to the same folder the markdown file is in.
   Alas, only works on linux.")
 
   (defun ig/markdown-paste-image-from-clipboard-advice (orig-func args)
-    (unless buffer-file-name
-      (error "Could not determine the folder to paste image to"))
-    (let* ((current-folder (file-name-directory buffer-file-name))
+    (let* ((buffer-file-name (if buffer-file-name buffer-file-name "/tmp/tmp"))
+           (current-folder (file-name-directory buffer-file-name))
            (pasted-image-filepath (ig/paste-image-from-clipboard current-folder)))
       (if pasted-image-filepath
           (insert (concat "![](./" (file-name-nondirectory pasted-image-filepath) ")"))
