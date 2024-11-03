@@ -633,7 +633,8 @@ images to the same folder the markdown file is in.
     (add-hook 'markdown-mode-hook #'nb/markdown-unhighlight))
 
   (defun ig/markdown-paste-images-from-clipboard ()
-    "Enables support for pasting images from the clipboard. Only works on linux. Uses `yank'."
+    "Enables support for pasting images from the clipboard.
+  Only works on linux. Uses `yank'."
     (interactive)
     (let* ((using-temp-dir (not buffer-file-name))
            (current-folder (if using-temp-dir temporary-file-directory (file-name-directory buffer-file-name)))
@@ -643,6 +644,8 @@ images to the same folder the markdown file is in.
               (insert (concat "![](" pasted-image-filepath ")"))
             (insert (concat "![](./" (file-name-nondirectory pasted-image-filepath) ")")))
         (yank))))
+
+  (put 'ig/markdown-paste-images-from-clipboard 'delete-selection 'yank)
 
   (defvar-keymap ig/markdown-paste-images-map
     :doc "Just remaps yank to custom function."
