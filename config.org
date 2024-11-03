@@ -632,24 +632,27 @@ images to the same folder the markdown file is in.
 
     (add-hook 'markdown-mode-hook #'nb/markdown-unhighlight))
 
-  (define-minor-mode ig/markdown-paste-images
-    "Allows you to paste images in markdown documents, straight from the clipboard.
-  Alas, only works on linux.")
-
-  (defun ig/markdown-paste-image-from-clipboard-advice (orig-func args)
-    (let* ((buffer-file-name (if buffer-file-name buffer-file-name "/tmp/tmp"))
-           (current-folder (file-name-directory buffer-file-name))
+  (defun ig/markdown-paste-images-from-clipboard ()
+    "Enables support for pasting images from the clipboard. Only works on linux. Uses `yank'."
+    (interactive)
+    (let* ((using-temp-dir (not buffer-file-name))
+           (current-folder (if using-temp-dir temporary-file-directory (file-name-directory buffer-file-name)))
            (pasted-image-filepath (ig/paste-image-from-clipboard current-folder)))
       (if pasted-image-filepath
-          (insert (concat "![](./" (file-name-nondirectory pasted-image-filepath) ")"))
-        (apply orig-func args))))
+          (if using-temp-dir
+              (insert (concat "![](" pasted-image-filepath ")"))
+            (insert (concat "![](./" (file-name-nondirectory pasted-image-filepath) ")")))
+        (yank))))
 
-  (defun ig/markdown-paste-image-advice-helper (orig-func &rest args)
-    (if ig/markdown-paste-images
-        (ig/markdown-paste-image-from-clipboard-advice orig-func args)
-      (apply orig-func args)))
+  (defvar-keymap ig/markdown-paste-images-map
+    :doc "Just remaps yank to custom function."
+    "<remap> <yank>" #'ig/markdown-paste-images-from-clipboard)
 
-  (advice-add 'yank :around #'ig/markdown-paste-image-advice-helper)
+  (define-minor-mode ig/markdown-paste-images
+    "Allows you to paste images in markdown documents, straight from the clipboard.
+  Alas, only works on Linux."
+    :lighter " MdPasteImg"
+    :keymap ig/markdown-paste-images-map)
 
   (add-hook 'markdown-mode-hook 'ig/markdown-paste-images)
 #+end_src
