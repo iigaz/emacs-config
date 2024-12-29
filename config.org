@@ -36,6 +36,7 @@
   - [[#window-management][Window management]]
   - [[#custom-functions][Custom functions]]
   - [[#input-fixes][Input fixes]]
+  - [[#flyspell][Flyspell]]
   - [[#editor-behaviour][Editor behaviour]]
   - [[#undoredo][Undo/Redo]]
   - [[#multiple-cursors][Multiple cursors]]
@@ -427,6 +428,21 @@ Fixes some input annoyances, sometimes may also introduce them.
      "qwertyuiop[]asdfghjkl;'zxcvbnm,.QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>#"
      0)
     )
+#+end_src
+
+** Flyspell
+
+Flyspell is the default spell checker in Emacs. This code enables it
+and removes "C-;" key binding that conflicts with other bindings I
+have.
+
+#+begin_src emacs-lisp
+  (use-package flyspell
+    :ensure nil
+    :hook ((prog-mode . flyspell-prog-mode)
+           (text-mode . flyspell-mode))
+    :bind (:map flyspell-mode-map
+                ("C-;" . nil)))
 #+end_src
 
 ** Editor behaviour
@@ -939,9 +955,7 @@ the mouse than bother with it.
 
 #+begin_src emacs-lisp
   (use-package avy
-    :bind (("C-;" . avy-goto-char)
-           :map flyspell-mode-map
-           ("C-;" . nil)))
+    :bind (("C-;" . avy-goto-char)))
 #+end_src
 
 ** Directory browser
