@@ -724,6 +724,9 @@ Making Emacs look better.
   ;; Set the strongest scratch buffer on start-up
   (setq initial-scratch-message "\n;;         /*\\           /*\\         \n;;        /---\\_       _/---\\        \n;;        (-\\---\\     /---/-)        \n;;        |--\\-\\-\\___/-/-/--|        \n;;        ]-\\-_--*****--_-/-[        \n;;        ]--/∙∙∙∙∙∙∙∙∙∙∙\\--[        \n;;        >-(∙∙∙∙∙∙∙∙∙∙∙∙∙)-<        \n;;        /_[∙∙∙∙∙∙∙∙∙∙∙∙∙]_\\        \n;;        * [∙∙,^∙∙∙∙∙^.∙∙] *        \n;;         ][∙(__\\_∙_/__)∙][         \n;;         ]\\∙|\\_/ v \\_/|∙/[         \n;;         </\\|    ‿    |/->         \n;;          \\_v--.___.--,^/          \n;;           /-~| >v< |~-_\\          \n;;         -- _\\]*\"-\"*[/_  -         \n;;        (__/-`---------`-_)        \n;;         _/\',~~~.--,/~~.~`\\        \n;;        (∙∙∙__∙∙∙\\/∙∙__∙∙∙)        \n;;        *--(..\\_____/..)--*        \n;;           \\__/     \\__/           \n")
   (setq inhibit-startup-screen t)
+
+  ;; How to construct names to buffers with similar filename
+  (setq uniquify-buffer-name-style 'forward)
 #+end_src
 
 ** Icons
