@@ -277,7 +277,8 @@ management a breeze for me.
 
 | Keys       | Action                                       |
 |------------+----------------------------------------------|
-| C-arrows   | Move to adjacent window in some direction    |
+| C-arrows   | Move to adjacent window                      |
+| M-S-arrows | Move current buffer to adjacent window       |
 | C-s-up     | Merge current window with window above       |
 | C-s-down   | Split current window down                    |
 | C-s-left   | Merge current window with window on the left |
@@ -314,6 +315,11 @@ management a breeze for me.
   (global-set-key (kbd "C-s-<down>") 'ig/split-window-down)
   (global-set-key (kbd "C-s-<up>") 'ig/merge-window-up)
   (global-set-key (kbd "s-f") 'delete-other-windows)
+
+  (global-set-key (kbd "M-S-<right>") 'windmove-swap-states-right)
+  (global-set-key (kbd "M-S-<left>") 'windmove-swap-states-left)
+  (global-set-key (kbd "M-S-<down>") 'windmove-swap-states-down)
+  (global-set-key (kbd "M-S-<up>") 'windmove-swap-states-up)
 #+end_src
 
 ** Custom functions
