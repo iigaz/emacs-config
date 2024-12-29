@@ -849,23 +849,23 @@ just shell would suffice) eshell.
 
 #+begin_src emacs-lisp
   (use-package vterm
-    :defer t
+    :bind (("C-`" . (lambda ()
+                      (interactive)
+                      (if (get-buffer-window "\*vterm\*")
+                          (dolist (buf (buffer-list))
+                            (when (eq (buffer-local-value 'major-mode buf) 'vterm-mode)
+                              (with-current-buffer buf
+                                (bury-buffer))))
+                        (vterm))))
+           :map vterm-mode-map
+           ("C-c d" . (lambda () (interactive) (vterm-send "C-d"))))
     :config
     (add-to-list 'display-buffer-alist
                  '("\*vterm\*"
                    (display-buffer-in-side-window)
                    (window-height . 0.25)
                    (side . bottom)
-                   (slot . 0)))
-    (global-set-key (kbd "C-`") (lambda ()
-                                  (interactive)
-                                  (if (get-buffer-window "\*vterm\*")
-                                      (dolist (buf (buffer-list))
-                                        (when (eq (buffer-local-value 'major-mode buf) 'vterm-mode)
-                                          (with-current-buffer buf
-                                            (bury-buffer))))
-                                    (vterm))))
-    (define-key vterm-mode-map (kbd "C-c d") (lambda () (interactive) (vterm-send "C-d"))))
+                   (slot . 0))))
 #+end_src
 
 ** Format on save
