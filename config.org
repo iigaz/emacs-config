@@ -50,6 +50,7 @@
   - [[#general][General]]
   - [[#icons][Icons]]
   - [[#mode-line][Mode line]]
+  - [[#minibuffer-and-completion][Minibuffer and completion]]
   - [[#editing-niceties][Editing niceties]]
 - [[#themes][Themes]]
   - [[#select-light--dark-theme-based-on-system-theme][Select light / dark theme based on system theme]]
@@ -662,17 +663,11 @@ worth installing Emacs for.
 
 ** Helpful niceties
 
-Ido (Interactive-Do) is a completion framework. [[https://www.masteringemacs.org/article/introduction-to-ido-mode][Learn more]].
 [[https://github.com/justbur/emacs-which-key][Which-key]] is a helpful window that pops up when you start pressing
 some key chord.
 [[https://github.com/radian-software/ctrlf][CTRLF]] is a package that adds proper search.
 
 #+begin_src emacs-lisp
-  (setq ido-auto-merge-delay-time 5)
-  (setq ido-enable-flex-matching t)
-  (setq ido-enable-tramp-completion nil)
-  (ido-mode t)
-
   (use-package which-key
     :defer t
     :init (which-key-mode))
@@ -778,6 +773,43 @@ interactive and also works in terminals.
     (setq minions-mode-line-lighter "🥞")
     :init
     (minions-mode 1))
+#+end_src
+
+** Minibuffer and completion
+
+Here I'm using [[https://github.com/minad][Minad]] stack for minibuffer completion, and consult for
+previews when switching to buffers. Although there's a lot of packages
+and some have alternatives built in Emacs, they load fast and have
+some nice features so it's worth installing them all. Except maybe
+consult, because it's large and I only use it for buffer previews.
+
+#+begin_src emacs-lisp
+  (use-package vertico
+    :init
+    (vertico-mode)
+    (vertico-mouse-mode))
+
+  (use-package savehist
+    :ensure nil
+    :init
+    (savehist-mode))
+
+  (use-package orderless
+    :custom
+    (completion-styles '(orderless basic))
+    (completion-category-defaults nil)
+    (completion-category-overrides '((file (styles partial-completion))))
+    :init
+    (define-advice company-capf (:around (orig-fun &rest args) set-completion-styles) 
+      (let ((completion-styles '(basic partial-completion orderless)))
+        (apply orig-fun args))))
+
+  (use-package marginalia
+    :init
+    (marginalia-mode))
+
+  (use-package consult
+    :bind ([remap switch-to-buffer] . consult-buffer))
 #+end_src
 
 ** Editing niceties
