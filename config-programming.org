@@ -184,3 +184,18 @@ really into snippets, but still use them once in a while.
   (use-package yasnippet-snippets
     :defer t)
 #+end_src
+
+* Dumb-jump
+
+#+begin_quote
+Dumb Jump is an Emacs "jump to definition" package with support for
+50+ programming languages that favors "just working".
+#+end_quote
+
+#+begin_src emacs-lisp
+  (use-package dumb-jump
+    :defer
+    :config
+    (add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
+    (setq xref-show-definitions-function #'xref-show-definitions-completing-read))
+#+end_src
