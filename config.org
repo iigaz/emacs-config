@@ -64,6 +64,7 @@
   - [[#restclient][Restclient]]
   - [[#bells-and-whistles][Bells and whistles]]
 - [[#customizations][Customizations]]
+- [[#notes][Notes]]
 
 * Essential
 
@@ -1017,3 +1018,16 @@ used to load this file.
   (let ((other-custom-file (expand-file-name "custom.el" user-emacs-directory)))
     (when (file-readable-p other-custom-file) (load other-custom-file)))
 #+end_src
+
+* Notes
+
+- To measure (or debug) Emacs startup time, use package ~esup~. To
+  install it, use ~try~: ~M-x try esup~ and ~M-x esup~.
+- I tried to switch to corfu from company, but I couldn't get it to
+  work how I want it to, so decided to stay with company.
+- It may be better to use built-in ~fido-vertical-mode~ instead of
+  ~vertico~. It still works with marginalia (quite useful and I don't
+  know whether it has a built-in replacement) and orderless (also
+  cool).
+- I don't want to install consult only to use it for buffer
+  switching. May be worth to explore what built-in options can offer.
