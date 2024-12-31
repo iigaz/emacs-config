@@ -44,6 +44,7 @@
   - [[#org-mode][Org mode]]
   - [[#markdown][Markdown]]
   - [[#magit][Magit]]
+  - [[#session-management][Session management]]
   - [[#helpful-niceties][Helpful niceties]]
   - [[#miscellaneous][Miscellaneous]]
 - [[#cosmetic-fixes][Cosmetic fixes]]
@@ -656,6 +657,28 @@ worth installing Emacs for.
     :after (magit)
     :init
     (magit-todos-mode))
+#+end_src
+
+** Session management
+
+[[https://github.com/jamescherti/easysession.el][Easysession]] is used to save sessions to files. I think the most
+popular alternatives for this kind of things are persp(ective)-mode
+and workgroups2, but I couldn't really get used to many features of
+perspectives, and while workgroups2 is a really nice package, it can't
+save workgroups from multiple instances of emacs because it saves them
+all in one file. There are also activities.el which I liked even
+better than workgroups, but it suffers from the same
+issue. Easysession is the only package that I could find which is easy
+enough to use and allows saving sessions from multiple instances,
+because every session configuration goes into its own file.
+
+#+begin_src emacs-lisp
+  (use-package easysession
+    :custom
+    (easysession-mode-line-misc-info t)
+    (easysession-mode-line-misc-info-format '( "[|" easysession-mode-line-session-name "|]" ))
+    :bind (("C-c C-p" . easysession-switch-to)
+           ("C-c C-s" . easysession-save-as)))
 #+end_src
 
 ** Helpful niceties
