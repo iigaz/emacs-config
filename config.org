@@ -812,7 +812,12 @@ consult, because it's large and I only use it for buffer previews.
   (use-package vertico
     :init
     (vertico-mode)
-    (vertico-mouse-mode))
+    (vertico-mouse-mode)
+    :config
+    (keymap-set vertico-map "RET" #'vertico-directory-enter)
+    (keymap-set vertico-map "DEL" #'vertico-directory-delete-char)
+    (keymap-set vertico-map "M-DEL" #'vertico-directory-delete-word)
+    (add-hook 'rfn-eshadow-update-overlay-hook #'vertico-directory-tidy))
 
   (use-package savehist
     :ensure nil
