@@ -340,14 +340,14 @@ Random functions I've found on the Internet or have written myself.
            (progn (list
                    (region-beginning)
                    (region-end)
-                   (ido-completing-read "Replace this:" -bracketsList )
-                   (ido-completing-read "To:" -bracketsList )))
+                   (completing-read "Replace this:" -bracketsList )
+                   (completing-read "To:" -bracketsList )))
          (progn
            (list
             (line-beginning-position)
             (line-end-position)
-            (ido-completing-read "Replace this:" -bracketsList )
-            (ido-completing-read "To:" -bracketsList ))))))
+            (completing-read "Replace this:" -bracketsList )
+            (completing-read "To:" -bracketsList ))))))
     (let* (
            (-findReplaceMap
             (vector
@@ -371,7 +371,7 @@ Random functions I've found on the Internet or have written myself.
   or image/png if none provided. Only works on linux."
     (interactive
      (list
-      (ido-read-file-name "File to save to:")
+      (read-file-name "File to save to:")
       (read-string "Mimetype:" "image/png")))
     (let* ((mimetype (or mimetype "image/png"))
            (command (concat "xclip -selection clipboard -t " mimetype " -o > \"" filepath "\"")))
@@ -385,8 +385,10 @@ Random functions I've found on the Internet or have written myself.
   it will pick the first one it finds.
   Returns nil if clipboard doesn't contain any image.
   Uses `ig/save-image-from-clipboard', thus only works on linux."
-    (interactive (list (ido-read-directory-name "Save image to:")))
-    (let ((clipboard-contents (gui-get-selection 'CLIPBOARD 'TARGETS)))
+    (interactive (list (read-directory-name "Save image to folder:")))
+    (let* ((clipboard-contents-may-be-symbol (gui-get-selection 'CLIPBOARD 'TARGETS))
+           (clipboard-contents (if (sequencep clipboard-contents-may-be-symbol) clipboard-contents-may-be-symbol
+                                 `[,clipboard-contents-may-be-symbol])))
       (when (sequencep clipboard-contents)
         (let* ((image-types-list (seq-filter
                                   (lambda (type)
