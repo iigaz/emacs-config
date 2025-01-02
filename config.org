@@ -680,7 +680,13 @@ because every session configuration goes into its own file.
     (easysession-mode-line-misc-info t)
     (easysession-mode-line-misc-info-format '( "[|" easysession-mode-line-session-name "|]" ))
     :bind (("C-c C-p" . easysession-switch-to)
-           ("C-c C-s" . easysession-save-as)))
+           ("C-c C-s" . easysession-save-as))
+    :config
+    (setq-default frame-title-format
+                  (list "[|"
+                        '(:eval (easysession-get-current-session-name))
+                        "|] "
+                        frame-title-format)))
 #+end_src
 
 ** Helpful niceties
