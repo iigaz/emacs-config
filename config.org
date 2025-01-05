@@ -792,14 +792,13 @@ interactive and also works in terminals.
   (use-package mlscroll
     :custom
     (mlscroll-in-color "DeepSkyBlue")
-    (mlscroll-out-color "")
+    (mlscroll-out-color nil)
     (mlscroll-right-align nil)
     (mlscroll-alter-percent-position 'replace)
     :init
     (mlscroll-mode 1))
 
   (use-package minions
-    :defer t
     :config
     (setq minions-mode-line-lighter "🥞")
     :init
@@ -1013,7 +1012,15 @@ A cool mode for writing http requests.
 
 #+begin_src emacs-lisp
   (use-package restclient
-    :defer t)
+    :config
+    (defun restclient ()
+      "Open the restclient buffer, (re)creating it if not present."
+      (interactive)
+      (pop-to-buffer (get-buffer-create "*restclient*"))
+      (unless (derived-mode-p 'restclient-mode)
+        (restclient-mode)))
+    :commands
+    (restclient))
 
   (use-package company-restclient
     :after (company restclient)
