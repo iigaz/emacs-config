@@ -717,6 +717,11 @@ Some random emacs configurations.
   (defadvice ansi-term (before force-bash)
     (interactive (list custom-term-shell)))
   (ad-activate 'ansi-term)
+
+  ;; Usually if I press F5 I want emacs to compile things;
+  ;; I also want to be able to redefine it in some buffers.
+  ;; If I put it in wakib-keys, it will take precedence over local bindings.
+  (global-set-key (kbd "<f5>") 'compile)
 #+end_src
 
 * Cosmetic fixes
