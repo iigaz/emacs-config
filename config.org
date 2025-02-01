@@ -163,6 +163,14 @@ snippets I've taken on the internet.
       (interactive "p")
       (wakib-custom-delete-word (- arg)))
 
+    (defun wakib-custom-vterm-aware-backward-delete-word (arg)
+      "Will do a regular backward delete if inside vterm.
+      Otherwise, it will perform `wakib-custom-backward-delete-word'."
+      (interactive "p")
+      (if (and (fboundp 'vterm-send-key) (derived-mode-p 'vterm-mode))
+          (vterm-send-key (kbd "C-h"))
+        (wakib-custom-backward-delete-word arg)))
+
     (defun wakib-custom-delete-line ()
       "Delete text from current position to end of line char.
       This command does not push text to `kill-ring'."
@@ -258,7 +266,7 @@ snippets I've taken on the internet.
             ("<C-return>" . wakib-insert-line-after)
             ("<C-S-return>" . wakib-insert-line-before)
             ("M-X" . pp-eval-expression)
-            ("<C-backspace>" . wakib-custom-backward-delete-word)
+            ("<C-backspace>" . wakib-custom-vterm-aware-backward-delete-word)
             ("<C-delete>" . wakib-custom-delete-word)
             ("<escape>" . keyboard-quit)
             ("<C-tab>" . wakib-custom-switch-to-last-buffer)
@@ -459,11 +467,11 @@ General fixes for the editor.
 #+begin_src emacs-lisp
   ;; Auto-insert bracket pairs
   (setq electric-pair-pairs '(
-                  (?\{ . ?\})
-                  (?\( . ?\))
-                  (?\[ . ?\])
-                  (?\" . ?\")
-                  ))
+                              (?\{ . ?\})
+                              (?\( . ?\))
+                              (?\[ . ?\])
+                              (?\" . ?\")
+                              ))
   (add-hook 'prog-mode-hook 'electric-pair-local-mode)
 
   ;; Delete selected region
