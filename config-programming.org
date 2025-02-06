@@ -14,7 +14,8 @@ someday, but for now it's definitely easier to install lsp-mode.
 #+begin_src emacs-lisp
   (use-package lsp-mode
     :bind (:map lsp-mode-map
-                ("C-." . lsp-execute-code-action))
+                ("C-." . lsp-execute-code-action)
+                ("<f2>" . lsp-rename))
     :hook ((lsp-mode . lsp-enable-which-key-integration))
     :custom
     (lsp-headerline-breadcrumb-enable nil)
@@ -104,12 +105,10 @@ Smart semicolon. Works good for C-like languages.
 
 #+begin_src emacs-lisp
   (use-package smart-semicolon
-    :defer t
-    :config
-    (add-hook 'c-mode-hook #'smart-semicolon-mode)
-    (add-hook 'c-mode-common-hook #'smart-semicolon-mode)
-    (add-hook 'c++-mode-hook #'smart-semicolon-mode)
-    (add-hook 'java-mode-hook #'smart-semicolon-mode))
+    :hook ((c-mode . smart-semicolon-mode)
+           (c-mode-common . smart-semicolon-mode)
+           (c++-mode . smart-semicolon-mode)
+           (java-mode . smart-semicolon-mode)))
 #+end_src
 
 * Editorconfig
@@ -118,8 +117,7 @@ Support for .editorconfig files.
 
 #+begin_src emacs-lisp
   (use-package editorconfig
-    :defer t
-    :config
+    :init
     (editorconfig-mode 1))
 #+end_src
 
@@ -132,8 +130,7 @@ Dumb Jump is an Emacs "jump to definition" package with support for
 
 #+begin_src emacs-lisp
   (use-package dumb-jump
-    :defer
-    :config
+    :init
     (add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
     (setq xref-show-definitions-function #'xref-show-definitions-completing-read))
 #+end_src

@@ -212,14 +212,14 @@ snippets I've taken on the internet.
             ("M-k" . next-line)
             ("M-u" . backward-word)
             ("M-o" . forward-word)
-            ("M-U" . wakib-back-to-indentation-or-beginning)
-            ("M-O" . move-end-of-line)
-            ("M-J" . backward-paragraph)
-            ("M-L" . forward-paragraph)
-            ("M-I" . scroll-down-command)
-            ("M-K" . scroll-up-command)
+            ("M-a" . wakib-back-to-indentation-or-beginning) ;; reminiscent of regular Emacs C-a
+            ("M-e" . move-end-of-line) ;; reminiscent of regular Emacs C-e
+            ("M-[" . backward-paragraph)
+            ("M-]" . forward-paragraph)
+            ("M-S-i" . scroll-down-command)
+            ("M-S-k" . scroll-up-command)
             ("M-n" . beginning-of-buffer)
-            ("M-N" . end-of-buffer)
+            ("M-S-n" . end-of-buffer)
             ("C-n" . wakib-new-empty-buffer)
             ("C-o" . find-file)
             ("C-S-o" . revert-buffer)
@@ -246,13 +246,14 @@ snippets I've taken on the internet.
             ("C-=" . text-scale-increase)
             ("C--" . text-scale-decrease)
             ("C-/" . comment-line)
+            ("C-:" . async-shell-command)
+            ("M-C-;" . eval-expression)
             ("M-h" . other-window)
             ("M-M" . goto-line)
             ("M-4" . split-window-right)
             ("M-$" . split-window-below)
             ("M-3" . delete-other-windows)
             ("M-#" . delete-window)
-            ("M-e" . backward-kill-word)
             ("M-r" . kill-word)
             ("M-E" . wakib-backward-kill-line)
             ("M-R" . kill-line)
@@ -260,7 +261,6 @@ snippets I've taken on the internet.
             ("M-<f4>" . save-buffers-kill-emacs)
             ("M-d" . delete-backward-char)
             ("M-f" . delete-char)
-            ("M-a" . wakib-select-line-block-all)
             ("M-s" . set-mark-command)
             ("M-S-s" . set-rectangular-region-anchor)
             ("<C-return>" . wakib-insert-line-after)
@@ -274,6 +274,8 @@ snippets I've taken on the internet.
             ("C-}" . hs-show-block)))
     :config
     (wakib-keys 1))
+
+  (global-set-key (kbd "C-c C-;") 'shell-command)
 #+end_src
 
 ** Window management
@@ -700,6 +702,8 @@ because every session configuration goes into its own file.
 [[https://github.com/justbur/emacs-which-key][Which-key]] is a helpful window that pops up when you start pressing
 some key chord.
 [[https://github.com/radian-software/ctrlf][CTRLF]] is a package that adds proper search.
+[[https://github.com/szermatt/emacs-bash-completion][Bash completions]] adds bash-completions to read-shell-command,
+which is used by shell-command and async-shell-command, among others.
 
 #+begin_src emacs-lisp
   (use-package which-key
@@ -709,6 +713,16 @@ some key chord.
   (use-package ctrlf
     :defer t
     :init (ctrlf-mode +1))
+
+  (use-package bash-completion
+    :init
+    (autoload
+            'bash-completion-dynamic-complete
+            "bash-completion"
+            "BASH completion hook")
+    (add-hook
+     'shell-dynamic-complete-functions
+     #'bash-completion-dynamic-complete))
 #+end_src
 
 ** Miscellaneous
