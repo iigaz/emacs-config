@@ -263,6 +263,7 @@ snippets I've taken on the internet.
             ("M-f" . delete-char)
             ("M-s" . set-mark-command)
             ("M-S-s" . set-rectangular-region-anchor)
+            ("M-=" . count-words)
             ("<C-return>" . wakib-insert-line-after)
             ("<C-S-return>" . wakib-insert-line-before)
             ("M-X" . pp-eval-expression)
@@ -744,6 +745,9 @@ Some random emacs configurations.
   ;; I also want to be able to redefine it in some buffers.
   ;; If I put it in wakib-keys, it will take precedence over local bindings.
   (global-set-key (kbd "<f5>") 'compile)
+
+  ;; Show character name on point with C-x =
+  (setq what-cursor-show-names t)
 #+end_src
 
 * Cosmetic fixes
