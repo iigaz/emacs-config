@@ -56,7 +56,7 @@
 - [[#themes][Themes]]
   - [[#select-light--dark-theme-based-on-system-theme][Select light / dark theme based on system theme]]
 - [[#other-packages][Other packages]]
-  - [[#vterm][Vterm]]
+  - [[#terminal][Terminal]]
   - [[#format-on-save][Format on save]]
   - [[#company][Company]]
   - [[#flycheck][Flycheck]]
@@ -163,14 +163,6 @@ snippets I've taken on the internet.
       (interactive "p")
       (wakib-custom-delete-word (- arg)))
 
-    (defun wakib-custom-vterm-aware-backward-delete-word (arg)
-      "Will do a regular backward delete if inside vterm.
-      Otherwise, it will perform `wakib-custom-backward-delete-word'."
-      (interactive "p")
-      (if (and (fboundp 'vterm-send-key) (derived-mode-p 'vterm-mode))
-          (vterm-send-key (kbd "C-h"))
-        (wakib-custom-backward-delete-word arg)))
-
     (defun wakib-custom-delete-line ()
       "Delete text from current position to end of line char.
       This command does not push text to `kill-ring'."
@@ -267,7 +259,7 @@ snippets I've taken on the internet.
             ("<C-return>" . wakib-insert-line-after)
             ("<C-S-return>" . wakib-insert-line-before)
             ("M-X" . pp-eval-expression)
-            ("<C-backspace>" . wakib-custom-vterm-aware-backward-delete-word)
+            ("<C-backspace>" . wakib-custom-backward-delete-word)
             ("<C-delete>" . wakib-custom-delete-word)
             ("<escape>" . keyboard-quit)
             ("<C-tab>" . wakib-custom-switch-to-last-buffer)
@@ -940,27 +932,29 @@ system-wide. To reflect these changes dynamically in Emacs, I use
 
 * Other packages
 
-** Vterm
+** Terminal
 
-Vterm is just a better terminal. It's quite laggy, awkward and slow,
-but it's probably the most feature-complete terminal emulator in
-Emacs. An alternative would be to use the built-in ansi-term or (if
-just shell would suffice) eshell.
+Previously, I was using [[https://github.com/akermu/emacs-libvterm][vterm]] for terminal emulation, since it renders
+everything pretty good and, when combined with vterm-toggle or custom
+functions, provides workflow similar to modern IDEs. However, over
+time I grow tired of its handling of user input and overall
+UX. Finally, I understood that I primarily use terminal emulator in
+emacs to either compile some code (which is better done using built-in
+~compile~), or to run some short command (which /can/ be done using
+~shell-command~ or its async variant, albeit some commands are using
+escape sequences which are not rendered well in emacs buffers).
+
+So at the moment of writing this I mostly use simple emacs functions
+for basically everything. And for the rare case when I DO need a
+terminal emulator, I'd rather open a real terminal emulator outside of
+emacs. I could write a simple function that just calls my preferred
+term, but it's better to use a small and portable package called
+[[https://github.com/davidshepherd7/terminal-here/][terminal-here]] for this purpose.
+
+Vterm configuration is saved in commit history.
 
 #+begin_src emacs-lisp
-  (use-package vterm
-    :bind (:map vterm-mode-map
-                ("C-c d" . (lambda () (interactive) (vterm-send "C-d"))))
-    :config
-    (add-to-list 'display-buffer-alist
-                 '("\*vterm\*"
-                   (display-buffer-in-side-window)
-                   (window-height . 0.25)
-                   (side . bottom)
-                   (slot . 0))))
-
-  (use-package vterm-toggle
-    :bind (("C-`" . vterm-toggle)))
+  (use-package terminal-here)
 #+end_src
 
 ** Format on save
