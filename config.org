@@ -410,6 +410,23 @@ Random functions I've found on the Internet or have written myself.
                    (filepath (concat folder-to-save-to/ filename)))
               (ig/save-image-from-clipboard filepath)
               filepath))))))
+
+  (defun ig/open-file-externally (&optional file)
+    "A simple wrapper over `browse-url-of-file' to display FILE
+  in default external program."
+    (interactive)
+    (let ((browse-url-default-handlers nil))
+      (browse-url-of-file file)))
+
+  (defun ig/open-folder-externally (&optional folder)
+    "Use `browse-url-of-file' to display (current) FOLDER
+  in default external program."
+    (interactive)
+    (or folder
+        (setq folder (expand-file-name ""))
+        (error "Current buffer has no default folder"))
+    (let ((browse-url-default-handlers nil))
+      (browse-url-of-file folder)))
 #+end_src
 
 ** Input fixes
