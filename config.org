@@ -197,6 +197,15 @@ snippets I've taken on the internet.
       (interactive)
       (switch-to-buffer nil))
 
+    (defun ig/async-shell-command (&optional ignore-project)
+      "Calls `project-async-shell-command' if inside a project
+  and ignore-project is nil, `async-shell-command' otherwise."
+      (interactive "P")
+      (if (and (not ignore-project) (project-current))
+          (let ((shell-command-prompt-show-cwd t))
+            (call-interactively #'project-async-shell-command))
+        (call-interactively #'async-shell-command)))
+
     (setq wakib-keylist
           `(("M-j" . left-char)
             ("M-l" . right-char)
@@ -238,7 +247,7 @@ snippets I've taken on the internet.
             ("C-=" . text-scale-increase)
             ("C--" . text-scale-decrease)
             ("C-/" . comment-line)
-            ("C-:" . async-shell-command)
+            ("C-:" . ig/async-shell-command)
             ("M-C-;" . eval-expression)
             ("M-h" . other-window)
             ("M-M" . goto-line)
@@ -427,6 +436,7 @@ Random functions I've found on the Internet or have written myself.
         (error "Current buffer has no default folder"))
     (let ((browse-url-default-handlers nil))
       (browse-url-of-file folder)))
+
 #+end_src
 
 ** Input fixes
@@ -711,28 +721,42 @@ because every session configuration goes into its own file.
 
 [[https://github.com/justbur/emacs-which-key][Which-key]] is a helpful window that pops up when you start pressing
 some key chord.
-[[https://github.com/radian-software/ctrlf][CTRLF]] is a package that adds proper search.
+[[https://github.com/minad/consult][Consult]] adds various search functions.
+[[https://github.com/radian-software/ctrlf][CTRLF]] is a package that replaces interactive search.
 [[https://github.com/szermatt/emacs-bash-completion][Bash completions]] adds bash-completions to read-shell-command,
 which is used by shell-command and async-shell-command, among others.
+[[https://github.com/elizagamedev/shell-command-x.el][shell-command-x]] improves shell-command and async-shell-command
+experience by renaming buffers and allowing to quickly restart
+commands.
 
 #+begin_src emacs-lisp
   (use-package which-key
-    :defer t
     :init (which-key-mode))
 
+  (use-package consult
+    :bind (([remap switch-to-buffer] . consult-buffer)
+           ("C-c f" . consult-line)))
+
   (use-package ctrlf
-    :defer t
-    :init (ctrlf-mode +1))
+    :init
+    (ctrlf-mode +1)
+    :custom
+    (ctrlf-default-search-style 'regexp)
+    (ctrlf-alternate-search-style 'literal))
 
   (use-package bash-completion
     :init
     (autoload
-            'bash-completion-dynamic-complete
-            "bash-completion"
-            "BASH completion hook")
+      'bash-completion-dynamic-complete
+      "bash-completion"
+      "BASH completion hook")
     (add-hook
      'shell-dynamic-complete-functions
      #'bash-completion-dynamic-complete))
+
+  (use-package shell-command-x
+    :init
+    (shell-command-x-mode 1))
 #+end_src
 
 ** Miscellaneous
@@ -867,11 +891,9 @@ interactive and also works in terminals.
 
 ** Minibuffer and completion
 
-Here I'm using [[https://github.com/minad][Minad]] stack for minibuffer completion, and consult for
-previews when switching to buffers. Although there's a lot of packages
-and some have alternatives built in Emacs, they load fast and have
-some nice features so it's worth installing them all. Except maybe
-consult, because it's large and I only use it for buffer previews.
+Here I'm using [[https://github.com/minad][Minad]] stack for minibuffer completion. Although there's
+a lot of packages and some have alternatives built in Emacs, they load
+fast and have some nice features so it's worth installing them all.
 
 #+begin_src emacs-lisp
   (use-package vertico
@@ -902,9 +924,6 @@ consult, because it's large and I only use it for buffer previews.
   (use-package marginalia
     :init
     (marginalia-mode))
-
-  (use-package consult
-    :bind ([remap switch-to-buffer] . consult-buffer))
 #+end_src
 
 ** Editing niceties
@@ -1020,7 +1039,10 @@ backends, but otherwise needs other packages to provide suggestions.
 [[https://github.com/company-mode/company-quickhelp][Company quickhelp]] is just a pop-up window for suggestions.
 
 #+begin_src emacs-lisp
-  (use-package company :hook (prog-mode . company-mode))
+  (use-package company :hook (prog-mode . company-mode)
+    :bind (:map company-active-map
+                ("M-k" . company-select-next)
+                ("M-i" . company-select-previous)))
 
   (use-package company-quickhelp
     :after (company)
