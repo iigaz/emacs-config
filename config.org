@@ -275,9 +275,16 @@ snippets I've taken on the internet.
             ("C-{" . hs-hide-block)
             ("C-}" . hs-show-block)))
     :config
-    (wakib-keys 1))
+    (wakib-keys 1)
 
-  (global-set-key (kbd "C-c C-;") 'shell-command)
+    ;; Set C-c and C-x overriding to work EVERYWHERE
+    (unless overriding-terminal-local-map
+      (setq overriding-terminal-local-map (make-sparse-keymap)))
+    (wakib-define-keys overriding-terminal-local-map '(("C-c" . kill-ring-save)
+                                                       ("C-x" . kill-region)))
+
+    ;; Other keybindings
+    (global-set-key (kbd "C-c C-;") 'shell-command))
 #+end_src
 
 ** Window management
@@ -1020,7 +1027,7 @@ for modes and formats files on save.
   (use-package apheleia
     :defer t
     :init
-    (apheleia-global-mode +1)
+    ;; (apheleia-global-mode +1)
     :config
     (setf (alist-get 'clang-format apheleia-formatters)
           '("clang-format" "-style" "Microsoft" "-assume-filename"
