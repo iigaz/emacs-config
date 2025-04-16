@@ -126,7 +126,7 @@ snippets I've taken on the internet.
       (interactive)
       (if (use-region-p)
           (kill-ring-save (region-beginning) (region-end))
-        (kill-whole-line)
+        (kill-whole-line -1)
         (yank)))
 
     (defun wakib-custom-cut-without-region ()
@@ -280,11 +280,76 @@ snippets I've taken on the internet.
     ;; Set C-c and C-x overriding to work EVERYWHERE
     (unless overriding-terminal-local-map
       (setq overriding-terminal-local-map (make-sparse-keymap)))
-    (wakib-define-keys overriding-terminal-local-map '(("C-c" . kill-ring-save)
-                                                       ("C-x" . kill-region)))
+    (wakib-define-keys overriding-terminal-local-map '(("C-c" . wakib-custom-copy-without-region)
+                                                       ("C-x" . wakib-custom-cut-without-region)))
 
     ;; Other keybindings
-    (global-set-key (kbd "C-c C-;") 'shell-command))
+    (global-set-key (kbd "C-c C-;") 'shell-command)
+
+    ;; Remap mouse to click links
+    (setq mouse-1-click-follows-link nil)
+    (global-set-key (kbd "C-<down-mouse-1>") nil)
+    (global-set-key (kbd "C-<mouse-1>") 'mouse-buffer-menu)
+    (setq goto-address-highlight-keymap
+          (let ((m (make-sparse-keymap)))
+            (define-key m (kbd "<mouse-3>") 'goto-address-at-point)
+            (define-key m (kbd "C-<mouse-1>") 'goto-address-at-point)
+            (define-key m (kbd "C-d C-o") 'goto-address-at-point)
+            m))
+
+    ;; REDEFINING ENTIRE `goto-address-fontify' FUNCTION JUST TO CHANGE HELP MESSAGES
+    (defun goto-address-fontify (&optional start end)
+      "Fontify the URLs and e-mail addresses in the current buffer.
+  This function implements `goto-address-highlight-p'
+  and `goto-address-fontify-p'."
+      ;; Clean up from any previous go.
+      (goto-address-unfontify (or start (point-min)) (or end (point-max)))
+      (save-excursion
+        (goto-char (or start (point-min)))
+        (when (or (eq t goto-address-fontify-maximum-size)
+                  (< (- (or end (point-max)) (point))
+                     goto-address-fontify-maximum-size))
+          (while (re-search-forward goto-address-url-regexp end t)
+            (let* ((s (match-beginning 0))
+                   (e (match-end 0))
+                   this-overlay)
+              (when (or (not goto-address-prog-mode)
+                        ;; This tests for both comment and string
+                        ;; syntax.
+                        (nth 8 (syntax-ppss)))
+                (setq this-overlay (make-overlay s e))
+                (and goto-address-fontify-p
+                     (overlay-put this-overlay 'face goto-address-url-face))
+                (overlay-put this-overlay 'evaporate t)
+                (overlay-put this-overlay
+                             'mouse-face goto-address-url-mouse-face)
+                (overlay-put this-overlay 'follow-link t)
+                (overlay-put this-overlay
+                             'help-echo "mouse-3, C-mouse-1, C-d C-o: follow URL")
+                (overlay-put this-overlay
+                             'keymap goto-address-highlight-keymap)
+                (overlay-put this-overlay 'goto-address t))))
+          (goto-char (or start (point-min)))
+          (while (re-search-forward goto-address-mail-regexp end t)
+            (let* ((s (match-beginning 0))
+                   (e (match-end 0))
+                   this-overlay)
+              (when (or (not goto-address-prog-mode)
+                        ;; This tests for both comment and string
+                        ;; syntax.
+                        (nth 8 (syntax-ppss)))
+                (setq this-overlay (make-overlay s e))
+                (and goto-address-fontify-p
+                     (overlay-put this-overlay 'face goto-address-mail-face))
+                (overlay-put this-overlay 'evaporate t)
+                (overlay-put this-overlay 'mouse-face
+                             goto-address-mail-mouse-face)
+                (overlay-put this-overlay 'follow-link t)
+                (overlay-put this-overlay
+                             'help-echo "mouse-3, C-mouse-1, C-d C-o: mail this address")
+                (overlay-put this-overlay
+                             'keymap goto-address-highlight-keymap)
+                (overlay-put this-overlay 'goto-address t))))))))
 #+end_src
 
 ** Window management
@@ -616,7 +681,9 @@ here than later in the config. Learn more about [[https://orgmode.org/manual/Str
 
   ;; Add ToC generator
   (use-package toc-org
-    :hook ((org-mode markdown-mode) . toc-org-mode))
+    :hook ((org-mode markdown-mode) . toc-org-mode)
+    :bind (:map markdown-mode-map
+                ([remap markdown-follow-thing-at-point] . 'toc-org-markdown-follow-thing-at-point)))
 #+end_src
 
 ** Markdown
