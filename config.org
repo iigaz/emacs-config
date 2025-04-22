@@ -651,11 +651,7 @@ Ls-lisp section is needed for sorting folders first, then files.
     (delete-by-moving-to-trash t)
     (dired-recursive-deletes 'always)
     (dired-recursive-copies 'always)
-    :config
-    (put 'dired-find-alternate-file 'disabled nil)
-    :hook
-    (dired-mode . (lambda ()
-                    (local-set-key (kbd "<mouse-2>") #'dired-find-alternate-file))))
+    :bind (:map dired-mode-map ("<mouse-2>" . dired-mouse-find-file)))
 
   (use-package ls-lisp
     :ensure nil
