@@ -1,0 +1,31 @@
+#+title: Flutter-specific modifications and packages
+#+author: Ilnar Gazizov (iigaz)
+
+Most code snippets are taken from home pages of respective
+packages.
+
+#+begin_src emacs-lisp
+  (use-package dart-mode
+    :defer t
+    :config
+    (defun project-try-dart (dir)
+      (let ((project (or (locate-dominating-file dir "pubspec.yaml")
+                         (locate-dominating-file dir "BUILD"))))
+        (if project
+            (cons 'dart project)
+          (cons 'transient dir))))
+    (add-hook 'project-find-functions #'project-try-dart)
+    (cl-defmethod project-roots ((project (head dart)))
+      (list (cdr project)))
+    (add-hook 'dart-mode-hook 'lsp))
+
+  (use-package flutter
+    :after dart-mode
+    :bind (:map dart-mode-map
+                ("C-c C-c" . #'flutter-run-or-hot-reload))
+    :hook (dart-mode . flutter-test-mode))
+
+  (use-package lsp-dart
+    :after lsp-mode)
+#+end_src
+
