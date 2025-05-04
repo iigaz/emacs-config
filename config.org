@@ -1088,8 +1088,8 @@ for modes and formats files on save.
 
 #+begin_src emacs-lisp
   (use-package apheleia
-    :defer t
-    :init
+    :bind (:map prog-mode-map ("C-S-i" . apheleia-format-buffer))
+    ;; :init
     ;; (apheleia-global-mode +1)
     :config
     (setf (alist-get 'clang-format apheleia-formatters)
