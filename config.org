@@ -597,6 +597,14 @@ General fixes for the editor.
   (setq undo-limit (* 10 undo-limit))
   (setq undo-strong-limit (* 10 undo-strong-limit))
   (setq undo-outer-limit (* 10 undo-outer-limit))
+
+  ;; Source: https://superuser.com/a/132844
+  (defadvice find-file (before make-directory-maybe (filename &optional wildcards) activate)
+    "Create parent directory if not exists while visiting file."
+    (unless (file-exists-p filename)
+      (let ((dir (file-name-directory filename)))
+        (unless (file-exists-p dir)
+          (make-directory dir t)))))
 #+end_src
 
 ** Undo/Redo
@@ -1155,7 +1163,8 @@ found [[https://github.com/jaypei/emacs-neotree][Neotree]], which has minimal de
            ("C-S-b" . neotree-toggle)
            :map neotree-mode-map
            ("f" . neotree-stretch-toggle)
-           ("." . neotree-hidden-file-toggle))
+           ("." . neotree-hidden-file-toggle)
+           ("+" . neotree-create-node))
     :config
     (setq neo-theme (if (display-graphic-p) (if (featurep 'all-the-icons) 'icons 'classic) 'arrow)))
 #+end_src
