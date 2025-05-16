@@ -9,4 +9,6 @@
           (org-babel-load-file org-file)
         (load-file el-file)))))
 
+(add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
+
 (ig/load-org-from-user-emacs-directory "config")

@@ -4,3 +4,6 @@
 !config.org
 !config-*.org
 !README.org
+!lisp/
+lisp/*
+!lisp/corfu-mouse.el

@@ -58,7 +58,7 @@
 - [[#other-packages][Other packages]]
   - [[#terminal][Terminal]]
   - [[#format-on-save][Format on save]]
-  - [[#company][Company]]
+  - [[#completion-in-buffer][Completion in buffer]]
   - [[#flycheck][Flycheck]]
   - [[#avy][Avy]]
   - [[#directory-browser][Directory browser]]
@@ -1110,21 +1110,29 @@ for modes and formats files on save.
     (push '(csharp-mode . csharpier) apheleia-mode-alist))
 #+end_src
 
-** Company
+** Completion in buffer
 
-[[https://company-mode.github.io/][Company]] is a completion framework. It comes with some configured
-backends, but otherwise needs other packages to provide suggestions.
-[[https://github.com/company-mode/company-quickhelp][Company quickhelp]] is just a pop-up window for suggestions.
+[[https://github.com/minad/corfu][Corfu]] is modern, integrates well and lightweight. Previously I used company. 
 
 #+begin_src emacs-lisp
-  (use-package company :hook (prog-mode . company-mode)
-    :bind (:map company-active-map
-                ("M-k" . company-select-next)
-                ("M-i" . company-select-previous)))
-
-  (use-package company-quickhelp
-    :after (company)
-    :init (company-quickhelp-mode))
+  (use-package corfu
+    :init
+    (global-corfu-mode)
+    (corfu-popupinfo-mode)
+    (require 'corfu-mouse)
+    (corfu-mouse-mode)
+    :custom
+    (corfu-auto t)
+    (corfu-quit-no-match t)
+    (corfu-popupinfo-delay 1)
+    (corfu-separator ?-)
+    :config
+    (setq completion-cycle-threshold 3)
+    (add-hook 'minibuffer-setup-hook (lambda ()
+                                       (when (memq #'completion-at-point
+                                                   (flatten-tree
+                                                    (current-local-map)))
+                                         (corfu-mode)))))
 #+end_src
 
 ** Flycheck
@@ -1225,5 +1233,3 @@ used to load this file.
 
 - To measure (or debug) Emacs startup time, use package ~esup~. To
   install it, use ~try~: ~M-x try esup~ and ~M-x esup~.
-- I tried to switch to corfu from company, but I couldn't get it to
-  work how I want it to, so decided to stay with company.
