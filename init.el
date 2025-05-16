@@ -1,4 +1,5 @@
 (setq gc-cons-threshold (* 100 1024 1024))
+(setq read-process-output-max (* 1024 1024))
 
 (defun ig/load-org-from-user-emacs-directory (filename-without-extension)
   (let ((org-file (expand-file-name (concat filename-without-extension ".org") user-emacs-directory))
