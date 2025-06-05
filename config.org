@@ -1112,20 +1112,37 @@ for modes and formats files on save.
 
 ** Completion in buffer
 
-[[https://github.com/minad/corfu][Corfu]] is modern, integrates well and lightweight. Previously I used company. 
+[[https://company-mode.github.io/][Company]] is a completion framework. It comes with some configured
+backends, but otherwise needs other packages to provide suggestions.
+[[https://github.com/company-mode/company-quickhelp][Company quickhelp]] is just a pop-up window for suggestions.
+
+[[https://github.com/minad/corfu][Corfu]] is a modern and lightweight frontend for CAPFs. It can be used
+as an alternative to company, but unfortunately I could not get it to
+work flawlessly in Emacs 29.4 built with pgtk (it would frequently
+freeze and sometimes crash Emacs). So for now, I've decided to settle
+on them both, company for auto-completion and corfu for manual
+completion.
 
 #+begin_src emacs-lisp
+  (use-package company :hook (prog-mode . company-mode)
+    :bind (:map company-active-map
+                ("M-k" . company-select-next)
+                ("M-i" . company-select-previous)))
+
+  (use-package company-quickhelp
+    :after (company)
+    :init (company-quickhelp-mode))
+
   (use-package corfu
     :init
     (global-corfu-mode)
     (corfu-popupinfo-mode)
-    (require 'corfu-mouse)
-    (corfu-mouse-mode)
     :custom
-    (corfu-auto t)
+    (corfu-auto nil)
     (corfu-quit-no-match t)
+    (corfu-quit-at-boundary t)
     (corfu-popupinfo-delay 1)
-    (corfu-separator ?-)
+    (tab-always-indent 'complete)
     :config
     (setq completion-cycle-threshold 3)
     (add-hook 'minibuffer-setup-hook (lambda ()
