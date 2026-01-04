@@ -1,32 +1,6 @@
-#+title: Stupid config for stupid people
+#+title: Personal Emacs Configuration
 #+author: Ilnar Gazizov (iigaz)
 #+description: Stupid config for stupid people.
-#+options: toc:3
-
-#+begin_example
-
-         /*\           /*\         
-        /---\_       _/---\        
-        (-\---\     /---/-)        
-        |--\-\-\___/-/-/--|        
-        ]-\-_--*****--_-/-[        
-        ]--/∙∙∙∙∙∙∙∙∙∙∙\--[        
-        >-(∙∙∙∙∙∙∙∙∙∙∙∙∙)-<        
-        /_[∙∙∙∙∙∙∙∙∙∙∙∙∙]_\        
-        * [∙∙,^∙∙∙∙∙^.∙∙] *        
-         ][∙(__\_∙_/__)∙][         
-         ]\∙|\_/ v \_/|∙/[         
-         </\|    ‿    |/->         
-          \_v--.___.--,^/          
-           /-~| >v< |~-_\          
-         -- _\]*"-"*[/_  -         
-        (__/-‘---------‘-_)        
-         _/’,~~~.--,/~~.~‘\        
-        (∙∙∙__∙∙∙\/∙∙__∙∙∙)        
-        *--(..\_____/..)--*        
-           \__/     \__/
-
-#+end_example
 
 ** Summary
 
