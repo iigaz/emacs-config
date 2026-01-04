@@ -1,1 +1,81 @@
-config.org
+#+title: Stupid config for stupid people
+#+author: Ilnar Gazizov (iigaz)
+#+description: Stupid config for stupid people.
+#+options: toc:3
+
+#+begin_example
+
+         /*\           /*\         
+        /---\_       _/---\        
+        (-\---\     /---/-)        
+        |--\-\-\___/-/-/--|        
+        ]-\-_--*****--_-/-[        
+        ]--/∙∙∙∙∙∙∙∙∙∙∙\--[        
+        >-(∙∙∙∙∙∙∙∙∙∙∙∙∙)-<        
+        /_[∙∙∙∙∙∙∙∙∙∙∙∙∙]_\        
+        * [∙∙,^∙∙∙∙∙^.∙∙] *        
+         ][∙(__\_∙_/__)∙][         
+         ]\∙|\_/ v \_/|∙/[         
+         </\|    ‿    |/->         
+          \_v--.___.--,^/          
+           /-~| >v< |~-_\          
+         -- _\]*"-"*[/_  -         
+        (__/-‘---------‘-_)        
+         _/’,~~~.--,/~~.~‘\        
+        (∙∙∙__∙∙∙\/∙∙__∙∙∙)        
+        *--(..\_____/..)--*        
+           \__/     \__/
+
+#+end_example
+
+** Summary
+
+Yet another rewrite of my Emacs configuration. I've decided to get rid
+of literate config, because I'm not always keeping it up-to-date.
+
+So, in a nutshell, this is a vanilla Emacs configuration that
+supports:
+- Common and intuitive key combinations for basic text manipulation;
+- (coming soon) Ergonomic and easy-to-remember text navigation keys;
+- Programming functionality on-par with VSCode.
+
+My main use-cases for Emacs are:
+- Editing source code and configuration files;
+- Browsing directories and files on local and remote devices;
+- Calling shell commands through =async-shell-command= and =compile=
+  (full-blown terminal is not a priority);
+- Writing markdown for all sorts of things;
+- Interacting with git repositories, as =magit= is literally the best
+  git interface I know of.
+
+** Long-term goals (LTG) of the configuration
+1. To be able to support different use-cases as separated Emacs versions;
+2. Minimize friction when switching between regular applications and
+   Emacs (meaning, to keep common keyboard shortcuts familiar);
+3. Introduce more ergonomic keys for text navigation;
+4. Support both terminal and GUI versions with minimal differences in
+   functionality.
+
+** Short-term goals (TODO list)
+1. Get rid of wakib-keys, because they contradict LTG #4, and
+   subsequently rewrite keys from scratch;
+2. Add a function to cycle through buffers with =C-<tab>= while
+   keeping the ability to switch between the last used;
+3. Replace built-in spell-checker (flyspell) with jinx. I don't know
+   whether it would really be better, but I don't like how flyspell
+   gets in my way sometimes.
+4. Get familiar with multiple-cursors and it's various methods;
+5. Add files to consult-buffer just for test;
+6. Research packages for in-buffer search like Ctrl-F;
+7. Create separate Emacs configurations for different workflows and a
+   way to conveniently load them interactively or through terminal;
+8. Write a script which installs these configurations as separate
+   .desktop files on Linux systems.
+
+** Notes
+
+- Currently, the old configuration is stored in =config.org=. It's not
+  used now, but I'll be keeping it for some time just in case.
+- To measure (or debug) Emacs startup time, use =esup=. To
+  install it, use =try= from =general-packages=: =M-x try esup= and
+  =M-x esup=. Although it might not work in recent versions of Emacs.

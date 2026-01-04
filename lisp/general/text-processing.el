@@ -4,18 +4,17 @@
 (use-package org
   :ensure nil
   ;; Open src edit window (C-c ') fullscreen
-  :custom (org-src-window-setup 'current-window)
+  :custom
+  (org-src-window-setup 'current-window)
   :config
   ;; Enable structure templates and add one for elisp code.
   ;; To use, write "<el" in org mode and press tab.
-  (with-eval-after-load 'org
-    (require 'org-tempo)
-    (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))))
+  (require 'org-tempo)
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp")))
 
 ;;; Markdown
 (use-package markdown-mode
   :mode ("README\\.md\\'" . gfm-mode)
-  :init (setq markdown-command '("pandoc" "-d" "html" "--from=markdown+emoji" "--to=html5"))
   :custom-face
   (markdown-header-delimiter-face ((t (:inherit markdown-comment-face))))
   (markdown-header-face-1 ((t (:inherit (org-level-1 markdown-header-face) :height 1.8))))
@@ -28,6 +27,7 @@
   (setq markdown-asymmetric-header t)
   (setq markdown-indent-on-enter 'indent-and-new-item)
   (setq markdown-enable-math t)
+  (setq markdown-command '("pandoc" "-d" "html" "--from=markdown+emoji" "--to=html5"))
   (define-key markdown-mode-map (kbd "C-1") 'markdown-insert-header-atx-1)
   (define-key markdown-mode-map (kbd "C-2") 'markdown-insert-header-atx-2)
   (define-key markdown-mode-map (kbd "C-3") 'markdown-insert-header-atx-3)
@@ -45,6 +45,7 @@
 
 ;; ToC generator
 (use-package toc-org
+  :after (org markdown-mode)
   :hook ((org-mode markdown-mode) . toc-org-mode)
   :bind (:map markdown-mode-map
               ([remap markdown-follow-thing-at-point] . 'toc-org-markdown-follow-thing-at-point)))
