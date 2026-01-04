@@ -215,8 +215,8 @@ Otherwise, prompt user to choose between creating a file or a
 
   ;; TODO: Get rid of wakib-keys or otherwise seriously reconsider the
   ;; bindings.
-  ;; TODO: Actually, I need to try cua-mode again, with C-c C-c for copy
-  ;; and C-c C-v for duplicate
+  ;; TODO: Actually, I need to try cua-mode again, with C-c C-c
+  ;; (unless defined) for copy and C-c C-v for duplicate line.
   (use-package wakib-keys
     :init
     (defun ig/wakib-copy-without-region ()
