@@ -1,0 +1,4 @@
+Packages that are specific to programming languages or coding in
+general. They may be quite heavy (lsp-mode or dap-mode for example),
+so they should only be included in configurations that absolutely
+require them.

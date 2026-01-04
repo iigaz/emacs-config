@@ -1,0 +1,4 @@
+General modules are used by most, if not all, configurations. These
+are welcome to include third-party packages that are likely to be
+helpful in most workflows, although it's still preferable to keep them
+as slim as possible to reduce start-up time.

@@ -1,0 +1,13 @@
+(load "basic-config")
+
+(load "general-packages")
+(load "development")
+(load "text-processing")
+(load "icons")
+
+(load "games")
+(load "restclient")
+
+(load "programming-general")
+(load "programming-frontend")
+(load "programming-cpp")

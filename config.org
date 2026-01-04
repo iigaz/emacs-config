@@ -67,9 +67,9 @@
 - [[#customizations][Customizations]]
 - [[#notes][Notes]]
 
-* Essential
+* Essential :modulated:
 
-** Package management
+** Package management :modulated:
 
 I'll use the default emacs package manager, with third party
 package repository MELPA (which claims to be the biggest emacs package
@@ -78,7 +78,7 @@ managing package configurations.
 
 #+begin_src emacs-lisp
   (require 'package)
-  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+  ;; (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
   (package-initialize)
 
   (unless (package-installed-p 'use-package)
@@ -89,7 +89,7 @@ managing package configurations.
   (setq use-package-always-ensure t)
 #+end_src
 
-** Customize
+** Customize :modulated:
 
 Emacs stores customizations done with =customize= commands along with
 a list of *selected* packages in init file by default. This is not
@@ -107,7 +107,7 @@ configurations with =use-package= are called.
   (when (file-readable-p custom-file) (load custom-file))
 #+end_src
 
-** Basic keybindings
+** Basic keybindings :modulated:
 
 I don't like default emacs keys and don't want to learn vim.
 I don't like cua-mode either. The best alternative I've found is
@@ -352,7 +352,7 @@ snippets I've taken on the internet.
                 (overlay-put this-overlay 'goto-address t))))))))
 #+end_src
 
-** Window management
+** Window management :modulated:
 
 =windmove= is a built-in package that makes it easy to manage
 windows. I've also wrote some functions that make simple window
@@ -405,7 +405,7 @@ management a breeze for me.
   (global-set-key (kbd "M-S-<up>") 'windmove-swap-states-up)
 #+end_src
 
-** Custom functions
+** Custom functions :modulated:
 
 Random functions I've found on the Internet or have written myself.
 
@@ -511,7 +511,7 @@ Random functions I've found on the Internet or have written myself.
 
 #+end_src
 
-** Input fixes
+** Input fixes :modulated:
 
 Fixes some input annoyances, sometimes may also introduce them.
 
@@ -539,7 +539,7 @@ Fixes some input annoyances, sometimes may also introduce them.
     )
 #+end_src
 
-** Flyspell
+** Flyspell :modulated:
 
 Flyspell is the default spell checker in Emacs. This code enables it
 and removes "C-;" key binding that conflicts with other bindings I
@@ -554,7 +554,7 @@ have.
                 ("C-;" . nil)))
 #+end_src
 
-** Editor behaviour
+** Editor behaviour :modulated:
 
 General fixes for the editor.
 
@@ -605,9 +605,14 @@ General fixes for the editor.
       (let ((dir (file-name-directory filename)))
         (unless (file-exists-p dir)
           (make-directory dir t)))))
+
+  ;; Auto revert buffers on external change
+  (global-auto-revert-mode t)
+
+  (setq isearch-lazy-count t)
 #+end_src
 
-** Undo/Redo
+** Undo/Redo :modulated:
 
 Default Emacs undo-redo has several limitations. It doesn't store
 history for long, will redo when you undo unless you do undo-only,
@@ -624,7 +629,7 @@ visual undo ([[https://github.com/casouri/vundo][vundo]]) with tree-like display
     :defer t)
 #+end_src
 
-** Multiple cursors
+** Multiple cursors :modulated:
 
 Adds multi-cursor support. Most useful keybinds are below. Tried to
 replicate the ones I'm used to from other editors.
@@ -642,7 +647,7 @@ replicate the ones I'm used to from other editors.
     (global-set-key (kbd "<mouse-2>") 'mc/add-cursor-on-click))
 #+end_src
 
-** Dired
+** Dired :modulated:
 
 Dired is literally an interactive =ls=. =dired-find-alternate-file=
 will prevent dired buffers from appearing all over the
@@ -668,7 +673,7 @@ Ls-lisp section is needed for sorting folders first, then files.
     (setq ls-lisp-use-insert-directory-program nil))
 #+end_src
 
-** Org mode
+** Org mode :modulated:
 
 Not exactly "essential", but still convenient to have it configured
 here than later in the config. Learn more about [[https://orgmode.org/manual/Structure-Templates.html][structure templates]].
@@ -690,7 +695,7 @@ here than later in the config. Learn more about [[https://orgmode.org/manual/Str
                 ([remap markdown-follow-thing-at-point] . 'toc-org-markdown-follow-thing-at-point)))
 #+end_src
 
-** Markdown
+** Markdown :modulated:
 
 I like and write markdown a lot. And I don't get the hype for
 org-mode, so I use it only for this literate config. Markdown for
@@ -703,7 +708,7 @@ images to the same folder the markdown file is in.
 #+begin_src emacs-lisp
   (use-package markdown-mode
     :mode ("README\\.md\\'" . gfm-mode)
-    :init (setq markdown-command '("pandoc" "--from=markdown" "--katex" "--to=html5"))
+    :init (setq markdown-command '("pandoc" "-d" "html" "--from=markdown+emoji" "--to=html5"))
     :custom-face
     (markdown-header-delimiter-face ((t (:inherit markdown-comment-face))))
     (markdown-header-face-1 ((t (:inherit (org-level-1 markdown-header-face) :height 1.8))))
@@ -755,21 +760,29 @@ images to the same folder the markdown file is in.
   (add-hook 'markdown-mode-hook 'ig/markdown-paste-images)
 #+end_src
 
-** Magit
+** Magit :modulated:
 
 A git client, highly recommend. [[https://magit.vc/][Learn more]]. One of the few packages
 worth installing Emacs for.
 
 #+begin_src emacs-lisp
-  (use-package magit :defer t)
+  (use-package magit :defer t
+    :config
+    (setq magit-branch-read-upstream-first 'fallback))
 
   (use-package magit-todos
     :after (magit)
     :init
-    (magit-todos-mode))
+    (magit-todos-mode)
+    :config
+    (setq magit-todos-branch-list nil)
+    (define-key magit-todos-section-map "b" nil)
+    (define-key magit-todos-item-section-map "b" nil)
+    (define-key magit-todos-section-map "B" nil)
+    (define-key magit-todos-item-section-map "B" nil))
 #+end_src
 
-** Session management
+** Session management :wont_be_modulated:
 
 [[https://github.com/jamescherti/easysession.el][Easysession]] is used to save sessions to files. I think the most
 popular alternatives for this kind of things are persp(ective)-mode
@@ -795,7 +808,7 @@ because every session configuration goes into its own file.
     (add-hook 'easysession-after-load-hook #'force-mode-line-update))
 #+end_src
 
-** Helpful niceties
+** Helpful niceties :modulated:
 
 [[https://github.com/justbur/emacs-which-key][Which-key]] is a helpful window that pops up when you start pressing
 some key chord.
@@ -806,6 +819,8 @@ which is used by shell-command and async-shell-command, among others.
 [[https://github.com/elizagamedev/shell-command-x.el][shell-command-x]] improves shell-command and async-shell-command
 experience by renaming buffers and allowing to quickly restart
 commands.
+[[https://github.com/yoshiki/yaml-mode][yaml-mode]] is just a major mode for YAML files, I don't know why it
+isn't in the default Emacs.
 
 #+begin_src emacs-lisp
   (use-package which-key
@@ -832,12 +847,15 @@ commands.
      'shell-dynamic-complete-functions
      #'bash-completion-dynamic-complete))
 
-  (use-package shell-command-x
-    :init
-    (shell-command-x-mode 1))
+  ;; (use-package shell-command-x
+  ;;   :init
+  ;;   (shell-command-x-mode 1))
+
+  (use-package yaml-mode
+    :mode "\\.ya?ml\\'")
 #+end_src
 
-** Miscellaneous
+** Miscellaneous :modulated:
 
 Some random emacs configurations.
 
@@ -877,11 +895,15 @@ Some random emacs configurations.
 
   ;; Show character name on point with C-x =
   (setq what-cursor-show-names t)
+
+  (setq nxml-slash-auto-complete-flag t)
+
+  (setq async-shell-command-buffer 'confirm-kill-process)
 #+end_src
 
-* Cosmetic fixes
+* Cosmetic fixes :modulated:
 
-** General
+** General :modulated:
 
 Making Emacs look better.
 
@@ -915,7 +937,7 @@ Making Emacs look better.
   (setq uniquify-buffer-name-style 'forward)
 #+end_src
 
-** Icons
+** Icons :modulated:
 
 [[https://github.com/domtronn/all-the-icons.el][All the icons]] provides a number of functions that insert various
 icons. Some decorative packages require it for their icons. The code
@@ -938,7 +960,7 @@ M-x all-the-icons-install-fonts
     :hook (dired-mode . all-the-icons-dired-mode))
 #+end_src
 
-** Mode line
+** Mode line :modulated:
 
 Also frame title, because they use the same formatting.
 
@@ -967,7 +989,7 @@ interactive and also works in terminals.
     (minions-mode 1))
 #+end_src
 
-** Minibuffer and completion
+** Minibuffer and completion :modulated:
 
 Here I'm using [[https://github.com/minad][Minad]] stack for minibuffer completion. Although there's
 a lot of packages and some have alternatives built in Emacs, they load
@@ -976,8 +998,7 @@ fast and have some nice features so it's worth installing them all.
 #+begin_src emacs-lisp
   (use-package vertico
     :init
-    (vertico-mode)
-    (vertico-mouse-mode)
+    (vertico-mode)    (vertico-mouse-mode)
     :config
     (keymap-set vertico-map "RET" #'vertico-directory-enter)
     (keymap-set vertico-map "DEL" #'vertico-directory-delete-char)
@@ -1004,7 +1025,7 @@ fast and have some nice features so it's worth installing them all.
     (marginalia-mode))
 #+end_src
 
-** Editing niceties
+** Editing niceties :modulated:
 
 Most of them really do whatever the name of the package says.
 [[https://elpa.gnu.org/packages/rainbow-mode.html][Rainbow mode]] highlights color names with whatever color they are.
@@ -1045,9 +1066,9 @@ optional "Zen mode"-like experience.
     :bind (("C-c d" . darkroom-tentative-mode)))
 #+end_src
 
-* Themes
+* Themes :modulated:
 
-** Select light / dark theme based on system theme
+** Select light / dark theme based on system theme :modulated:
 
 I usually just use light theme, but sometimes I enable dark theme
 system-wide. To reflect these changes dynamically in Emacs, I use
@@ -1062,9 +1083,9 @@ system-wide. To reflect these changes dynamically in Emacs, I use
     :init (auto-dark-mode t))
 #+end_src
 
-* Other packages
+* Other packages :modulated:
 
-** Terminal
+** Terminal :modulated:
 
 Previously, I was using [[https://github.com/akermu/emacs-libvterm][vterm]] for terminal emulation, since it renders
 everything pretty good and, when combined with vterm-toggle or custom
@@ -1089,7 +1110,7 @@ Vterm configuration is saved in commit history.
   (use-package terminal-here)
 #+end_src
 
-** Format on save
+** Format on save :modulated:
 
 [[https://github.com/radian-software/apheleia][Apheleia]] is a nice package that automatically configures formatters
 for modes and formats files on save.
@@ -1110,7 +1131,7 @@ for modes and formats files on save.
     (push '(csharp-mode . csharpier) apheleia-mode-alist))
 #+end_src
 
-** Completion in buffer
+** Completion in buffer :modulated:
 
 [[https://company-mode.github.io/][Company]] is a completion framework. It comes with some configured
 backends, but otherwise needs other packages to provide suggestions.
@@ -1127,7 +1148,8 @@ completion.
   (use-package company :hook (prog-mode . company-mode)
     :bind (:map company-active-map
                 ("M-k" . company-select-next)
-                ("M-i" . company-select-previous)))
+                ("M-i" . company-select-previous)
+                ("C-s" . save-buffer)))
 
   (use-package company-quickhelp
     :after (company)
@@ -1152,7 +1174,7 @@ completion.
                                          (corfu-mode)))))
 #+end_src
 
-** Flycheck
+** Flycheck :modulated:
 
 Syntax checker, a little bit more feature-complete than flymake. [[https://www.flycheck.org/en/latest/][Documentation]].
 
@@ -1163,7 +1185,7 @@ Syntax checker, a little bit more feature-complete than flymake. [[https://www.f
     (setq-default flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
 #+end_src
 
-** Avy
+** Avy :modulated:
 
 [[https://github.com/abo-abo/avy][Avy]] is a useful package for people who are too lazy to move their
 hands away from their keyboard. It allows you to navigate to any point
@@ -1177,7 +1199,7 @@ the mouse than bother with it.
     :bind (("C-;" . avy-goto-char)))
 #+end_src
 
-** Directory browser
+** Directory browser :modulated:
 
 I used Treemacs previously, but it's too heavy for me. Instead, I
 found [[https://github.com/jaypei/emacs-neotree][Neotree]], which has minimal dependencies and still works OK.
@@ -1194,7 +1216,7 @@ found [[https://github.com/jaypei/emacs-neotree][Neotree]], which has minimal de
     (setq neo-theme (if (display-graphic-p) (if (featurep 'all-the-icons) 'icons 'classic) 'arrow)))
 #+end_src
 
-** Restclient
+** Restclient :modulated:
 
 A cool mode for writing http requests.
 
@@ -1217,7 +1239,7 @@ A cool mode for writing http requests.
     (add-hook 'restclient-mode 'company-mode))
 #+end_src
 
-** Bells and whistles
+** Bells and whistles :modulated:
 
 Some small packages that no one really needs but they're sometimes
 cool to have.
