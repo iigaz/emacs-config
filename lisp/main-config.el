@@ -7,6 +7,7 @@
 
 (load "games")
 (load "restclient")
+(load "llms")
 
 (load "programming-general")
 (load "programming-frontend")
