@@ -43,6 +43,10 @@ My main use-cases for Emacs are:
 
 ** Notes
 
+- This configuration uses modular-config by Sidharth Arya. This means
+  you can call different configurations from the CLI like this:
+  =emacs --config basic --modules "spell-checking llms games"=
+  (full list of available configurations and modules is in =init.el=).
 - Currently, the old configuration is stored in =config.org=. It's not
   used now, but I'll be keeping it for some time just in case.
 - To measure (or debug) Emacs startup time, use =esup=. To
