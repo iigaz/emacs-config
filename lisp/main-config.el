@@ -4,6 +4,7 @@
 (load "development")
 (load "text-processing")
 (load "icons")
+(load "spell-checking")
 
 (load "games")
 (load "restclient")

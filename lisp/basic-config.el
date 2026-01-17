@@ -372,7 +372,7 @@ and ignore-project is nil, `async-shell-command' otherwise."
             ("<C-backspace>" . ig/wakib-backward-delete-word)
             ("<C-delete>" . ig/wakib-delete-word)
             ("<escape>" . keyboard-quit)
-            ("<C-tab>" . ig/wakib-switch-to-last-buffer)
+            ;; ("<C-tab>" . ig/wakib-switch-to-last-buffer)
             ("C-{" . hs-hide-block)
             ("C-}" . hs-show-block)))
 

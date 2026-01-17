@@ -33,17 +33,12 @@ My main use-cases for Emacs are:
 ** Short-term goals (TODO list)
 1. Get rid of wakib-keys, because they contradict LTG #4, and
    subsequently rewrite keys from scratch;
-2. Add a function to cycle through buffers with =C-<tab>= while
-   keeping the ability to switch between the last used;
-3. Replace built-in spell-checker (flyspell) with jinx. I don't know
-   whether it would really be better, but I don't like how flyspell
-   gets in my way sometimes.
-4. Get familiar with multiple-cursors and it's various methods;
-5. Add files to consult-buffer just for test;
-6. Research packages for in-buffer search like Ctrl-F;
-7. Create separate Emacs configurations for different workflows and a
+2. Get familiar with multiple-cursors and it's various methods;
+3. Add files to consult-buffer just for test;
+4. Research packages for in-buffer search like Ctrl-F;
+5. Create separate Emacs configurations for different workflows and a
    way to conveniently load them interactively or through terminal;
-8. Write a script which installs these configurations as separate
+6. Write a script which installs these configurations as separate
    .desktop files on Linux systems.
 
 ** Notes

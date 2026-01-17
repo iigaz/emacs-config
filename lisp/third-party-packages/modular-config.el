@@ -2,6 +2,10 @@
 
 ;; Copyright (C) 2020 Sidharth Arya
 
+;; Modified by: Ilnar Gazizov (iigaz)
+;; Modified on: 2026-01
+;; Changes: Added a flag to load modules from `load-path'.
+
 ;; Author: Sidharth Arya <sidhartharya10@gmail.com>
 ;; Maintainer: Sidharth Arya <sidhartharya10@gmail.com>
 ;; Created: 28 May 2020
@@ -76,6 +80,12 @@ The directory to place bookmarks in"
   :group 'modular-config
   :type 'symbol)
 
+(defcustom modular-config-use-packages-from-load-path nil
+  "Whether to load packages from `load-path' instead of
+`modular-config-path'."
+  :group 'modular-config
+  :type 'symbol)
+
 (defun modular-config-command-line-args-process ()
   "Process the command line arguments."
   (interactive)
@@ -144,7 +154,9 @@ FORCE is a prefix argument."
   (message "%s" force)
   (dolist (module modules)
     (let* ((module-name (symbol-name module))
-           (module-full (concat modular-config-path "/" module-name)))
+           (module-full (if modular-config-use-packages-from-load-path
+                            module-name
+                          (concat modular-config-path "/" module-name))))
       (if (or (equal force 1) (not (member module-name modular-config-current-modules)))
           (progn
           (load module-full)

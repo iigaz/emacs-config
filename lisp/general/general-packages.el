@@ -49,6 +49,9 @@
   :init
   (vertico-mode)
   (vertico-mouse-mode)
+  :bind (:map vertico-map
+              ("C-<tab>" . vertico-next)
+              ("C-<iso-lefttab>" . vertico-previous))
   :config
   (keymap-set vertico-map "RET" #'vertico-directory-enter)
   (keymap-set vertico-map "DEL" #'vertico-directory-delete-char)
@@ -91,11 +94,11 @@
 ;; Toolbox for navigation with preview
 (use-package consult
   :bind (([remap switch-to-buffer] . consult-buffer)
-         ("C-c f" . consult-line)))
+         ("C-c f" . consult-line)
+         ("C-<tab>" . consult-buffer)))
 
 ;;; Spell-check
 
-;; TODO: Replace with jinx
 (use-package flyspell
   :ensure nil
   :hook ((prog-mode . flyspell-prog-mode)
