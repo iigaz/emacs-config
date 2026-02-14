@@ -110,7 +110,6 @@
 
 ;; TODO: Research other useful methods
 (use-package multiple-cursors
-  :defer t
   :config
   (global-set-key (kbd "C->") 'mc/mark-next-like-this)
   (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
