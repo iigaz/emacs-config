@@ -91,6 +91,28 @@
   (ctrlf-default-search-style 'regexp)
   (ctrlf-alternate-search-style 'literal))
 
+;; Better than plain query-replace
+(use-package visual-replace
+  :custom
+  (visual-replace-default-to-full-scope t)
+  :init
+  (visual-replace-global-mode 1)
+
+  (defun ig/visual-replace-from-ctrlf ()
+    (interactive)
+    (when (minibuffer-prompt)
+      (let* ((query (minibuffer-contents))
+             (args (visual-replace-make-args
+                    :from query
+                    :to ""
+                    :regexp (eq ctrlf--style 'regexp)
+                    :case-fold ctrlf--case-fold-search)))
+        (run-at-time nil nil
+                     (lambda ()
+                       (apply #'visual-replace (visual-replace-read args))))
+        (exit-minibuffer))))
+  (define-key ctrlf-minibuffer-mode-map (kbd "C-r") #'ig/visual-replace-from-ctrlf))
+
 ;; Toolbox for navigation with preview
 (use-package consult
   :bind (([remap switch-to-buffer] . consult-buffer)

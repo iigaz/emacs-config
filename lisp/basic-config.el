@@ -337,8 +337,6 @@ and ignore-project is nil, `async-shell-command' otherwise."
             ("C-y" . undo-redo)
             ("C-f" . isearch-forward)
             ("C-S-f" . isearch-backward)
-            ("C-r" . query-replace)
-            ("C-S-r" . query-replace-regexp)
             ("C-s" . save-buffer)
             ("C-S-s" . write-file)
             ("C-p" . switch-to-buffer)
@@ -396,6 +394,8 @@ and ignore-project is nil, `async-shell-command' otherwise."
 
     ;; Other keybindings
     (global-set-key (kbd "C-c C-;") 'shell-command)
+    (global-set-key (kbd "C-r") 'query-replace-regexp)
+    (global-set-key (kbd "C-S-r") 'query-replace)
 
     ;; Remap mouse to click links
     (setq mouse-1-click-follows-link nil)
@@ -452,6 +452,14 @@ and ignore-project is nil, `async-shell-command' otherwise."
   (global-set-key (kbd "M-S-<left>") 'windmove-swap-states-left)
   (global-set-key (kbd "M-S-<down>") 'windmove-swap-states-down)
   (global-set-key (kbd "M-S-<up>") 'windmove-swap-states-up)
+
+  (use-package isearch
+    :ensure nil
+    :bind (:map isearch-mode-map
+                ("C-f" . isearch-repeat-forward)
+                ("C-s" . nil)
+                ("C-S-f" . isearch-repeat-backward)
+                ("C-r" . isearch-query-replace)))
   ) ; Key Bindings
 
 ;;; Shell and Terminal
