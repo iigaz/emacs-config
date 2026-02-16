@@ -122,47 +122,4 @@ Alas, only works on Linux."
   (add-hook 'markdown-mode-hook 'ig/markdown-paste-images)
   ) ; Images From Clipboard
 
-;;; Custom Functions
-(progn
-  (defun xah-change-bracket-pairs (*p1 *p2 *fromType *toType)
-    "Change bracket pairs from one type to another on current line or selection.
-  For example, change all parenthesis () to square brackets [].
-
-  When called in lisp program, *p1 *p2 are region begin/end position, *fromType or *toType is a string of a bracket pair. ➢ for example: \"()\",  \"[]\", etc.
-  URL `http://ergoemacs.org/emacs/elisp_change_brackets.html'
-  Version 2015-04-12, modified by IG."
-    (interactive
-     (let ((-bracketsList
-            '("()" "{}" "[]" "<>" "\"\"" "''" "“”" "‘’" "‹›" "«»" "「」" "『』" "【】" "〖〗" "〈〉" "《》" "〔〕" "⦅⦆" "〚〛" "⦃⦄" "〈〉" "⦑⦒" "⧼⧽" "⟦⟧" "⟨⟩" "⟪⟫" "⟮⟯" "⟬⟭" "❛❜" "❝❞" "❨❩" "❪❫" "❴❵" "❬❭" "❮❯" "❰❱")))
-       (if (use-region-p)
-           (progn (list
-                   (region-beginning)
-                   (region-end)
-                   (completing-read "Replace this:" -bracketsList )
-                   (completing-read "To:" -bracketsList )))
-         (progn
-           (list
-            (line-beginning-position)
-            (line-end-position)
-            (completing-read "Replace this:" -bracketsList )
-            (completing-read "To:" -bracketsList ))))))
-    (let* (
-           (-findReplaceMap
-            (vector
-             (vector (char-to-string (elt *fromType 0)) (char-to-string (elt *toType 0)))
-             (vector (char-to-string (elt *fromType 1)) (char-to-string (elt *toType 1))))))
-      (save-excursion
-        (save-restriction
-          (narrow-to-region *p1 *p2)
-          (let ( (case-fold-search nil))
-            (mapc
-             (lambda (-x)
-               (goto-char (point-min))
-               (while (search-forward (elt -x 0) nil t)
-                 (replace-match (elt -x 1) 'FIXEDCASE 'LITERAL)))
-             -findReplaceMap))))))
-
-  (global-set-key (kbd "C-c b") 'xah-change-bracket-pairs)
-  ) ; Custom Functions
-
 ;;; text-processing.el ends here

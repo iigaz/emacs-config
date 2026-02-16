@@ -497,4 +497,65 @@ and ignore-project is nil, `async-shell-command' otherwise."
       (kill-local-variable 'after-save-hook)))
   ) ; Shell and Terminal
 
+
+;;; Custom Functions
+(progn
+  (defun xah-change-bracket-pairs (*p1 *p2 *fromType *toType)
+    "Change bracket pairs from one type to another on current line or selection.
+  For example, change all parenthesis () to square brackets [].
+
+  When called in lisp program, *p1 *p2 are region begin/end position, *fromType or *toType is a string of a bracket pair. ➢ for example: \"()\",  \"[]\", etc.
+  URL `http://ergoemacs.org/emacs/elisp_change_brackets.html'
+  Version 2015-04-12, modified by IG."
+    (interactive
+     (let ((-bracketsList
+            '("()" "{}" "[]" "<>" "\"\"" "''" "“”" "‘’" "‹›" "«»" "「」" "『』" "【】" "〖〗" "〈〉" "《》" "〔〕" "⦅⦆" "〚〛" "⦃⦄" "〈〉" "⦑⦒" "⧼⧽" "⟦⟧" "⟨⟩" "⟪⟫" "⟮⟯" "⟬⟭" "❛❜" "❝❞" "❨❩" "❪❫" "❴❵" "❬❭" "❮❯" "❰❱")))
+       (if (use-region-p)
+           (progn (list
+                   (region-beginning)
+                   (region-end)
+                   (completing-read "Replace this:" -bracketsList )
+                   (completing-read "To:" -bracketsList )))
+         (progn
+           (list
+            (line-beginning-position)
+            (line-end-position)
+            (completing-read "Replace this:" -bracketsList )
+            (completing-read "To:" -bracketsList ))))))
+    (let* (
+           (-findReplaceMap
+            (vector
+             (vector (char-to-string (elt *fromType 0)) (char-to-string (elt *toType 0)))
+             (vector (char-to-string (elt *fromType 1)) (char-to-string (elt *toType 1))))))
+      (save-excursion
+        (save-restriction
+          (narrow-to-region *p1 *p2)
+          (let ( (case-fold-search nil))
+            (mapc
+             (lambda (-x)
+               (goto-char (point-min))
+               (while (search-forward (elt -x 0) nil t)
+                 (replace-match (elt -x 1) 'FIXEDCASE 'LITERAL)))
+             -findReplaceMap))))))
+  (global-set-key (kbd "C-c b") 'xah-change-bracket-pairs)
+
+  (defcustom ig/jot-config-path user-init-file
+    "File to copy code snippets to."
+    :type 'string
+    :group 'ig/jot-config)
+  (defun ig/jot-config ()
+    "Append region to `ig/jot-config-path' and evaluate it."
+    (interactive)
+    (if (use-region-p)
+        (let ((region-text (buffer-substring (region-beginning) (region-end))))
+          (make-directory (file-name-directory ig/jot-config-path) t)
+          (find-file ig/jot-config-path)
+          (goto-char (point-max))
+          (insert region-text)
+          (eval-buffer))
+      (message "Please select a region to add it to the config.")))
+  (setq ig/jot-config-path (expand-file-name "local.el" user-emacs-directory))
+  (global-set-key (kbd "C-c c") 'ig/jot-config)
+  ) ; Custom Functions
+
 ;;; basic-config.el ends here
