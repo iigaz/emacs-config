@@ -35,10 +35,7 @@ My main use-cases for Emacs are:
    subsequently rewrite keys from scratch;
 2. Get familiar with multiple-cursors and it's various methods;
 3. Add files to consult-buffer just for test;
-4. Research packages for in-buffer search like Ctrl-F;
-5. Create separate Emacs configurations for different workflows and a
-   way to conveniently load them interactively or through terminal;
-6. Write a script which installs these configurations as separate
+4. Write a script which installs these configurations as separate
    .desktop files on Linux systems.
 
 ** Notes
