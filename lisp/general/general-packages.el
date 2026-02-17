@@ -130,11 +130,12 @@
 
 ;;; Multiple cursors
 
-;; TODO: Research other useful methods
 (use-package multiple-cursors
   :config
   (global-set-key (kbd "C->") 'mc/mark-next-like-this)
   (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+  (global-set-key (kbd "C-c C->") 'mc/mark-more-like-this-extended)
+  (global-set-key (kbd "C-c C-r") 'mc/mark-all-dwim)
   (define-key mc/keymap (kbd "<return>") nil)
   (define-key mc/keymap (kbd "<mouse-1>") 'mc/keyboard-quit)
   (global-unset-key (kbd "M-<down-mouse-1>"))
