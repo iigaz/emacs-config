@@ -33,6 +33,12 @@ My main use-cases for Emacs are:
 ** Short-term goals (TODO list)
 1. Get rid of wakib-keys, because they contradict LTG #4, and
    subsequently rewrite keys from scratch;
+   - [ ] Rewrite keys from scratch;
+   - [ ] Move navigation keys to overriding-terminal-local-map;
+   - [ ] (Optional) Create another overriding-map for CUA keys;
+   - [ ] Try out cua-mode, and if not good enough recreate C-d and C-e;
+   - [ ] Gather all global keys in basic-config into one piece of code;
+   - [ ] Use Emacs in terminal for a while to find and fix remaining bugs.
 2. Write a script which installs these configurations as separate
    .desktop files on Linux systems;
 3. Try out Embark.

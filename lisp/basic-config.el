@@ -147,7 +147,7 @@
   (use-package dired
     :ensure nil
     :custom
-    (dired-listing-switches "-hal1")
+    (dired-listing-switches "-hal")
     (delete-by-moving-to-trash t)
     (dired-recursive-deletes 'always)
     (dired-recursive-copies 'always)
@@ -216,100 +216,97 @@ Otherwise, prompt user to choose between creating a file or a
   ;; defined in corresponding modules, unless they are considered
   ;; essential.
 
-  ;; TODO: Get rid of wakib-keys or otherwise seriously reconsider the
-  ;; bindings.
-  ;; TODO: Actually, I need to try cua-mode again, with C-c C-c
-  ;; (unless defined) for copy and C-c C-v for duplicate line.
-  (use-package wakib-keys
-    :init
-    (defun ig/wakib-copy-without-region ()
-      "Copy region if there is any, and copy the whole line otherwise."
-      (interactive)
-      (if (use-region-p)
-          (kill-ring-save (region-beginning) (region-end))
-        (kill-whole-line -1)
-        (yank)))
+  (defun ig/wakib-copy-without-region ()
+    "Copy region if there is any, and copy the whole line otherwise."
+    (interactive)
+    (if (use-region-p)
+        (kill-ring-save (region-beginning) (region-end))
+      (kill-whole-line -1)
+      (yank)))
 
-    (defun ig/wakib-cut-without-region ()
-      "Cut region if there is any, and cut the whole line otherwise."
-      (interactive)
-      (when (use-region-p)
-        (kill-region (region-beginning) (region-end))))
+  (defun ig/wakib-cut-without-region ()
+    "Cut region if there is any, and cut the whole line otherwise."
+    (interactive)
+    (when (use-region-p)
+      (kill-region (region-beginning) (region-end))))
 
-    (defvar ig/wakib-protected-buffer-list '("*scratch*" "*dashboard*" "*Messages*")
-      "Buffers defined in this list won't be killed with `ig/wakib-kill-buffer',
+  (defvar ig/wakib-protected-buffer-list '("*scratch*" "*dashboard*" "*Messages*")
+    "Buffers defined in this list won't be killed with `ig/wakib-kill-buffer',
 and will be buried instead.")
 
-    (defun ig/wakib-kill-buffer ()
-      "Bury current buffer if it is in `ig/wakib-protected-buffer-list',
+  (defun ig/wakib-kill-buffer ()
+    "Bury current buffer if it is in `ig/wakib-protected-buffer-list',
 and kill it otherwise."
-      (interactive)
-      (if (member (buffer-name (current-buffer)) ig/wakib-protected-buffer-list)
-          (bury-buffer)
-        (kill-buffer (current-buffer))))
+    (interactive)
+    (if (member (buffer-name (current-buffer)) ig/wakib-protected-buffer-list)
+        (bury-buffer)
+      (kill-buffer (current-buffer))))
 
-    (defun ig/wakib-delete-word (arg)
-      "Delete characters forward until encountering the end of a word.
+  (defun ig/wakib-delete-word (arg)
+    "Delete characters forward until encountering the end of a word.
     With argument, do this that many times.
     This command does not push text to `kill-ring'."
-      (interactive "p")
-      (delete-region
-       (point)
-       (progn
-         (forward-same-syntax arg)
-         (point))))
+    (interactive "p")
+    (delete-region
+     (point)
+     (progn
+       (forward-same-syntax arg)
+       (point))))
 
-    (defun ig/wakib-backward-delete-word (arg)
-      "Delete characters backward until encountering the beginning of a word.
+  (defun ig/wakib-backward-delete-word (arg)
+    "Delete characters backward until encountering the beginning of a word.
     With argument, do this that many times.
     This command does not push text to `kill-ring'."
-      (interactive "p")
-      (ig/wakib-delete-word (- arg)))
+    (interactive "p")
+    (ig/wakib-delete-word (- arg)))
 
-    (defun ig/wakib-delete-line ()
-      "Delete text from current position to end of line char.
+  (defun ig/wakib-delete-line ()
+    "Delete text from current position to end of line char.
     This command does not push text to `kill-ring'."
-      (interactive)
-      (delete-region
-       (point)
-       (progn (end-of-line 1) (point)))
-      (delete-char 1))
+    (interactive)
+    (delete-region
+     (point)
+     (progn (end-of-line 1) (point)))
+    (delete-char 1))
 
-    (defun ig/wakib-delete-line-backward ()
-      "Delete text between the beginning of the line to the cursor position.
+  (defun ig/wakib-delete-line-backward ()
+    "Delete text between the beginning of the line to the cursor position.
     This command does not push text to `kill-ring'."
-      (interactive)
-      (let (p1 p2)
-        (setq p1 (point))
-        (beginning-of-line 1)
-        (setq p2 (point))
-        (delete-region p1 p2)))
+    (interactive)
+    (let (p1 p2)
+      (setq p1 (point))
+      (beginning-of-line 1)
+      (setq p2 (point))
+      (delete-region p1 p2)))
 
-    (defun ig/wakib-quit ()
-      "Smart quit, takes windows and daemonp into an account."
-      (interactive)
-      (if (eq (selected-window) (window-main-window (selected-frame)))
-          (if (daemonp)
-              (delete-frame)
-            (when (yes-or-no-p "Are you sure you want to quit GNU Emacs? ")
-              (save-buffers-kill-terminal)))
-        (delete-window)))
+  (defun ig/wakib-quit ()
+    "Smart quit, takes windows and daemonp into an account."
+    (interactive)
+    (if (eq (selected-window) (window-main-window (selected-frame)))
+        (if (daemonp)
+            (delete-frame)
+          (when (yes-or-no-p "Are you sure you want to quit GNU Emacs? ")
+            (save-buffers-kill-terminal)))
+      (delete-window)))
 
-    ;; TODO: cycle through buffers
-    (defun ig/wakib-switch-to-last-buffer ()
-      "Switches to last buffer."
-      (interactive)
-      (switch-to-buffer nil))
+  ;; TODO: cycle through buffers
+  (defun ig/wakib-switch-to-last-buffer ()
+    "Switches to last buffer."
+    (interactive)
+    (switch-to-buffer nil))
 
-    (defun ig/async-shell-command (&optional ignore-project)
-      "Calls `project-async-shell-command' if inside a project
+  (defun ig/async-shell-command (&optional ignore-project)
+    "Calls `project-async-shell-command' if inside a project
 and ignore-project is nil, `async-shell-command' otherwise."
-      (interactive "P")
-      (if (and (not ignore-project) (project-current))
-          (let ((shell-command-prompt-show-cwd t))
-            (call-interactively #'project-async-shell-command))
-        (call-interactively #'async-shell-command)))
+    (interactive "P")
+    (if (and (not ignore-project) (project-current))
+        (let ((shell-command-prompt-show-cwd t))
+          (call-interactively #'project-async-shell-command))
+      (call-interactively #'async-shell-command)))
 
+  ;; TODO: Remove wakib-keys
+  (use-package wakib-keys
+    :init
     (setq wakib-keylist
           `(("M-j" . left-char)
             ("M-l" . right-char)
@@ -345,12 +342,6 @@ and ignore-project is nil, `async-shell-command' otherwise."
             ("C-p" . switch-to-buffer)
             ("C-S-p" . ibuffer)
             ("C-a" . mark-whole-buffer)
-            ("C-+" . text-scale-increase)
-            ("C-=" . text-scale-increase)
-            ("C--" . text-scale-decrease)
-            ("C-/" . comment-line)
-            ("C-:" . ig/async-shell-command)
-            ("M-C-;" . eval-expression)
             ("M-h" . other-window)
             ("M-M" . goto-line)
             ("M-4" . split-window-right)
@@ -366,50 +357,47 @@ and ignore-project is nil, `async-shell-command' otherwise."
             ("M-f" . delete-char)
             ("M-s" . set-mark-command)
             ("M-S-s" . set-rectangular-region-anchor)
-            ("M-=" . count-words)
             ("<C-return>" . wakib-insert-line-after)
             ("<C-S-return>" . wakib-insert-line-before)
             ("M-X" . pp-eval-expression)
             ("<C-backspace>" . ig/wakib-backward-delete-word)
             ("<C-delete>" . ig/wakib-delete-word)
             ("<escape>" . keyboard-quit)
-            ;; ("<C-tab>" . ig/wakib-switch-to-last-buffer)
-            ("C-{" . hs-hide-block)
-            ("C-}" . hs-show-block)
-            ("C-<mouse-1>" . ignore)
-            ("C-<mouse-2>" . ignore)
-            ("C-<mouse-3>" . ignore)
-            ("C-<down-mouse-1>" . ignore)
-            ("C-<down-mouse-2>" . ignore)
-            ("C-<down-mouse-3>" . ignore)
             ))
 
     :functions (wakib-define-keys)
     :defines (goto-address-highlight-keymap)
     :config
-    (wakib-keys 1)
+    (wakib-keys 1))
 
-    ;; Set C-c and C-x overriding to work EVERYWHERE
+  (use-package emacs
+    :ensure nil
+    :init
     (unless overriding-terminal-local-map
       (setq overriding-terminal-local-map (make-sparse-keymap)))
-    (wakib-define-keys overriding-terminal-local-map '(("C-c" . ig/wakib-copy-without-region)
-                                                       ("C-x" . ig/wakib-cut-without-region)))
-
-    ;; Other keybindings
-    (global-set-key (kbd "C-c C-;") 'shell-command)
-    (global-set-key (kbd "C-r") 'query-replace-regexp)
-    (global-set-key (kbd "C-S-r") 'query-replace)
-
-    ;; Remap mouse to click links
-    (setq mouse-1-click-follows-link nil)
-    (global-set-key (kbd "C-<down-mouse-1>") nil)
-    (global-set-key (kbd "C-<mouse-1>") 'mouse-buffer-menu)
-    (setq goto-address-highlight-keymap
-          (let ((m (make-sparse-keymap)))
-            (define-key m (kbd "<mouse-3>") 'goto-address-at-point)
-            (define-key m (kbd "C-<mouse-1>") 'goto-address-at-point)
-            (define-key m (kbd "C-d C-o") 'goto-address-at-point)
-            m)))
+    (require 'wakib-keys)
+    :bind (
+           ("C-+" . text-scale-increase)
+           ("C-=" . text-scale-increase)
+           ("C--" . text-scale-decrease)
+           ("C-/" . comment-line)
+           ("C-:" . ig/async-shell-command)
+           ("M-C-;" . eval-expression)
+           ("M-=" . count-words)
+           ;; ("<C-tab>" . ig/wakib-switch-to-last-buffer)
+           ("C-{" . hs-hide-block)
+           ("C-}" . hs-show-block)
+           
+           :map overriding-terminal-local-map
+           ("C-c" . ig/wakib-copy-without-region)
+           ("C-x" . ig/wakib-cut-without-region)
+           ("C-<mouse-1>" . ignore)
+           ("C-<mouse-2>" . ignore)
+           ("C-<mouse-3>" . ignore)
+           ("C-<down-mouse-1>" . ignore)
+           ("C-<down-mouse-2>" . ignore)
+           ("C-<down-mouse-3>" . ignore)
+           ))
 
   ;; | Keys       | Action                                       |
   ;; |------------+----------------------------------------------|
@@ -463,6 +451,22 @@ and ignore-project is nil, `async-shell-command' otherwise."
                 ("C-s" . nil)
                 ("C-S-f" . isearch-repeat-backward)
                 ("C-r" . isearch-query-replace)))
+
+  ;; Other keybindings
+  (global-set-key (kbd "C-c C-;") 'shell-command)
+  (global-set-key (kbd "C-r") 'query-replace-regexp)
+  (global-set-key (kbd "C-S-r") 'query-replace)
+
+  ;; Remap mouse to click links
+  (setq mouse-1-click-follows-link nil)
+  (global-set-key (kbd "C-<down-mouse-1>") nil)
+  (global-set-key (kbd "C-<mouse-1>") 'mouse-buffer-menu)
+  (setq goto-address-highlight-keymap
+        (let ((m (make-sparse-keymap)))
+          (define-key m (kbd "<mouse-3>") 'goto-address-at-point)
+          (define-key m (kbd "C-<mouse-1>") 'goto-address-at-point)
+          (define-key m (kbd "C-d C-o") 'goto-address-at-point)
+          m))
   ) ; Key Bindings
 
 ;;; Shell and Terminal
