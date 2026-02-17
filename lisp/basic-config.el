@@ -15,6 +15,9 @@
   (setq custom-file (concat user-emacs-directory "customize.el"))
   ;; Load custom file
   (when (file-readable-p custom-file) (load custom-file))
+
+  (recentf-mode t)
+  (setq recentf-max-saved-items 50)
   ) ; Emacs
 
 ;;; Package Management

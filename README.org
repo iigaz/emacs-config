@@ -33,9 +33,9 @@ My main use-cases for Emacs are:
 ** Short-term goals (TODO list)
 1. Get rid of wakib-keys, because they contradict LTG #4, and
    subsequently rewrite keys from scratch;
-2. Add files to consult-buffer just for test;
-3. Write a script which installs these configurations as separate
-   .desktop files on Linux systems.
+2. Write a script which installs these configurations as separate
+   .desktop files on Linux systems;
+3. Try out Embark.
 
 ** Notes
 
