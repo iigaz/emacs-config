@@ -16,7 +16,7 @@
                              ((general) programming-general
                               programming-frontend programming-cpp))
                             (main
-                             ((programming) games restclient llms))))
+                             ((programming) games restclient llms test))))
 (setq modular-config-default 'main)
 (setq modular-config-use-packages-from-load-path 't)
 (modular-config-command-line-args-process)
