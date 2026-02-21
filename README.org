@@ -36,7 +36,7 @@ My main use-cases for Emacs are:
    - [ ] Rewrite keys from scratch;
    - [ ] Move navigation keys to overriding-terminal-local-map;
    - [ ] (Optional) Create another overriding-map for CUA keys;
-   - [ ] Try out cua-mode, and if not good enough recreate C-d and C-e;
+   - [ ] Write a package which allows rebinding main prefix keys - Unbound
    - [ ] Gather all global keys in basic-config into one piece of code;
    - [ ] Use Emacs in terminal for a while to find and fix remaining bugs.
 2. Write a script which installs these configurations as separate

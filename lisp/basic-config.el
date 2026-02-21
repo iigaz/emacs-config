@@ -362,7 +362,7 @@ and ignore-project is nil, `async-shell-command' otherwise."
             ("M-X" . pp-eval-expression)
             ("<C-backspace>" . ig/wakib-backward-delete-word)
             ("<C-delete>" . ig/wakib-delete-word)
-            ("<escape>" . keyboard-quit)
+            ("<escape>" . keyboard-escape-quit)
             ))
 
     :functions (wakib-define-keys)
@@ -375,7 +375,6 @@ and ignore-project is nil, `async-shell-command' otherwise."
     :init
     (unless overriding-terminal-local-map
       (setq overriding-terminal-local-map (make-sparse-keymap)))
-    (require 'wakib-keys)
     :bind (
            ("C-+" . text-scale-increase)
            ("C-=" . text-scale-increase)

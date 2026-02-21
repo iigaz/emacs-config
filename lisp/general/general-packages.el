@@ -89,7 +89,18 @@
   (ctrlf-mode +1)
   :custom
   (ctrlf-default-search-style 'regexp)
-  (ctrlf-alternate-search-style 'literal))
+  (ctrlf-alternate-search-style 'literal)
+  :config
+  (defun ig/ctrlf-forward-default (&optional arg)
+    "A slight modification to `ctrlf-forward-default' to initiate search
+with selected region. If no region is selected, continue as usual."
+    (interactive "P")
+    (let ((initial (when (use-region-p)
+                     (buffer-substring (region-beginning) (region-end)))))
+      (deactivate-mark)
+      (ctrlf-forward ctrlf-default-search-style
+                     (null arg) initial nil t)))
+  (define-key ctrlf-mode-map [remap isearch-forward] #'ig/ctrlf-forward-default))
 
 ;; Better than plain query-replace
 (use-package visual-replace

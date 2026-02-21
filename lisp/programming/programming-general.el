@@ -53,7 +53,7 @@
   ;; (apheleia-global-mode +1) ; enables format-on-save
   :config
   (setf (alist-get 'clang-format apheleia-formatters)
-        '("clang-format" "-style" "Microsoft" "-assume-filename"
+        '("clang-format" "-style" "LLVM" "-assume-filename"
           (or
            (buffer-file-name)
            (apheleia-formatters-mode-extension)
