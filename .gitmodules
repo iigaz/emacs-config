@@ -1,0 +1,3 @@
+[submodule "rebound"]
+	path = lisp/packages/rebound
+	url = https://github.com/iigaz/rebound
