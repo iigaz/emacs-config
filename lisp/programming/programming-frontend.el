@@ -14,4 +14,8 @@
   (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
   (setq web-mode-enable-auto-indentation nil))
 
+;;; Typescript
+(use-package emacs
+  :mode (("\\.tsx?\\'" . tsx-ts-mode)))
+
 ;;; programming-frontend.el ends here

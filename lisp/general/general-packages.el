@@ -142,16 +142,17 @@ with selected region. If no region is selected, continue as usual."
 ;;; Multiple cursors
 
 (use-package multiple-cursors
-  :config
-  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-  (global-set-key (kbd "C-c C->") 'mc/mark-more-like-this-extended)
-  (global-set-key (kbd "C-c C-r") 'mc/mark-all-dwim)
-  (define-key mc/keymap (kbd "<return>") nil)
-  (define-key mc/keymap (kbd "<mouse-1>") 'mc/keyboard-quit)
-  (global-unset-key (kbd "M-<down-mouse-1>"))
-  (global-set-key (kbd "M-<mouse-1>") 'mc/add-cursor-on-click)
-  (global-unset-key (kbd "<down-mouse-2>"))
-  (global-set-key (kbd "<mouse-2>") 'mc/add-cursor-on-click))
+  :demand
+  :bind (("C->" . mc/mark-next-like-this)
+         ("C-<" . mc/mark-previous-like-this)
+         ("C-c C->" . mc/mark-more-like-this-extended)
+         ("C-c C-r" . mc/mark-all-dwim)
+         ("M-<down-mouse-1>" . nil)
+         ("M-<mouse-1>" . mc/add-cursor-on-click)
+         ("<down-mouse-2>" . nil)
+         ("<mouse-2>" . mc/add-cursor-on-click)
+         :map mc/keymap
+         ("<return>" . nil)
+         ("<mouse-1>" . mc/keyboard-quit)))
 
 ;;; general-packages.el ends here
