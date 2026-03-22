@@ -33,9 +33,9 @@ My main use-cases for Emacs are:
 ** Short-term goals (TODO list)
 1. Get rid of wakib-keys, because they contradict LTG #4, and
    subsequently rewrite keys from scratch;
-   - [ ] Rewrite keys from scratch;
-   - [ ] Move navigation keys to overriding-terminal-local-map;
-   - [ ] (Optional) Create another overriding-map for CUA keys;
+   - [X] Rewrite keys from scratch;
+   - [X] Move navigation keys to overriding-terminal-local-map;
+   - [X] (Optional) Create another overriding-map for CUA keys;
    - [X] Write a package which allows rebinding main prefix keys - rebound
    - [ ] Gather all global keys in basic-config into one piece of code;
    - [ ] Use Emacs in terminal for a while to find and fix remaining bugs.

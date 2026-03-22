@@ -140,6 +140,13 @@
   (setq undo-limit (* 10 undo-limit))
   (setq undo-strong-limit (* 10 undo-strong-limit))
   (setq undo-outer-limit (* 10 undo-outer-limit))
+
+  ;; Configure hide-show blocks
+  (use-package hideshow
+    :hook ((prog-mode . hs-minor-mode))
+    :bind (:map hs-minor-mode-map
+                ("C-{" . hs-hide-block)
+                ("C-}" . hs-show-block)))
   ) ; Editor
 
 ;;; File Management
@@ -216,7 +223,7 @@ Otherwise, prompt user to choose between creating a file or a
   ;; defined in corresponding modules, unless they are considered
   ;; essential.
 
-  (defun ig/wakib-copy-without-region ()
+  (defun ig/copy-without-region ()
     "Copy region if there is any, and copy the whole line otherwise."
     (interactive)
     (if (use-region-p)
@@ -224,25 +231,25 @@ Otherwise, prompt user to choose between creating a file or a
       (kill-whole-line -1)
       (yank)))
 
-  (defun ig/wakib-cut-without-region ()
+  (defun ig/cut-without-region ()
     "Cut region if there is any, and cut the whole line otherwise."
     (interactive)
     (when (use-region-p)
       (kill-region (region-beginning) (region-end))))
 
-  (defvar ig/wakib-protected-buffer-list '("*scratch*" "*dashboard*" "*Messages*")
-    "Buffers defined in this list won't be killed with `ig/wakib-kill-buffer',
+  (defvar ig/protected-buffer-list '("*scratch*" "*dashboard*" "*Messages*")
+    "Buffers defined in this list won't be killed with `ig/protected-kill-buffer',
 and will be buried instead.")
 
-  (defun ig/wakib-kill-buffer ()
-    "Bury current buffer if it is in `ig/wakib-protected-buffer-list',
+  (defun ig/protected-kill-buffer ()
+    "Bury current buffer if it is in `ig/protected-buffer-list',
 and kill it otherwise."
     (interactive)
-    (if (member (buffer-name (current-buffer)) ig/wakib-protected-buffer-list)
+    (if (member (buffer-name (current-buffer)) ig/protected-buffer-list)
         (bury-buffer)
       (kill-buffer (current-buffer))))
 
-  (defun ig/wakib-delete-word (arg)
+  (defun ig/forward-delete-word (arg)
     "Delete characters forward until encountering the end of a word.
     With argument, do this that many times.
     This command does not push text to `kill-ring'."
@@ -253,14 +260,14 @@ and kill it otherwise."
        (forward-same-syntax arg)
        (point))))
 
-  (defun ig/wakib-backward-delete-word (arg)
+  (defun ig/backward-delete-word (arg)
     "Delete characters backward until encountering the beginning of a word.
     With argument, do this that many times.
     This command does not push text to `kill-ring'."
     (interactive "p")
-    (ig/wakib-delete-word (- arg)))
+    (ig/forward-delete-word (- arg)))
 
-  (defun ig/wakib-delete-line ()
+  (defun ig/forward-delete-line ()
     "Delete text from current position to end of line char.
     This command does not push text to `kill-ring'."
     (interactive)
@@ -269,7 +276,7 @@ and kill it otherwise."
      (progn (end-of-line 1) (point)))
     (delete-char 1))
 
-  (defun ig/wakib-delete-line-backward ()
+  (defun ig/backward-delete-line ()
     "Delete text between the beginning of the line to the cursor position.
     This command does not push text to `kill-ring'."
     (interactive)
@@ -279,21 +286,16 @@ and kill it otherwise."
       (setq p2 (point))
       (delete-region p1 p2)))
 
-  (defun ig/wakib-quit ()
-    "Smart quit, takes windows and daemonp into an account."
+  (defun ig/delete-or-quit ()
+    "Smart quit, takes windows and `daemonp' into an account."
     (interactive)
     (if (eq (selected-window) (window-main-window (selected-frame)))
         (if (daemonp)
             (delete-frame)
           (when (yes-or-no-p "Are you sure you want to quit GNU Emacs? ")
             (save-buffers-kill-terminal)))
+      (ig/protected-kill-buffer)
       (delete-window)))
-
-  ;; TODO: cycle through buffers
-  (defun ig/wakib-switch-to-last-buffer ()
-    "Switches to last buffer."
-    (interactive)
-    (switch-to-buffer nil))
 
   (defun ig/async-shell-command (&optional ignore-project)
     "Calls `project-async-shell-command' if inside a project
@@ -304,112 +306,22 @@ and ignore-project is nil, `async-shell-command' otherwise."
           (call-interactively #'project-async-shell-command))
       (call-interactively #'async-shell-command)))
 
-  ;; TODO: Remove wakib-keys
-  (use-package wakib-keys
-    :init
-    (setq wakib-keylist
-          `(("M-j" . left-char)
-            ("M-l" . right-char)
-            ("M-i" . previous-line)
-            ("M-k" . next-line)
-            ("M-u" . backward-word)
-            ("M-o" . forward-word)
-            ("M-a" . wakib-back-to-indentation-or-beginning) ;; reminiscent of regular Emacs C-a
-            ("M-e" . move-end-of-line) ;; reminiscent of regular Emacs C-e
-            ("M-[" . backward-paragraph)
-            ("M-]" . forward-paragraph)
-            ("M-S-i" . scroll-down-command)
-            ("M-S-k" . scroll-up-command)
-            ("M-n" . beginning-of-buffer)
-            ("M-S-n" . end-of-buffer)
-            ("C-n" . wakib-new-empty-buffer)
-            ("C-o" . find-file)
-            ("C-S-o" . revert-buffer)
-            ("C-w" . ig/wakib-kill-buffer)
-            ("C-q" . ig/wakib-quit)
-            ("C-<next>" . next-buffer)
-            ("C-<prior>" . previous-buffer)
-            ("C-c" . ig/wakib-copy-without-region)
-            ("C-x" . ig/wakib-cut-without-region)
-            ("C-v" . yank)
-            ("C-z" . undo-only)
-            ("C-S-z" . undo-redo)
-            ("C-y" . undo-redo)
-            ("C-f" . isearch-forward)
-            ("C-S-f" . isearch-backward)
-            ("C-s" . save-buffer)
-            ("C-S-s" . write-file)
-            ("C-p" . switch-to-buffer)
-            ("C-S-p" . ibuffer)
-            ("C-a" . mark-whole-buffer)
-            ("M-h" . other-window)
-            ("M-M" . goto-line)
-            ("M-4" . split-window-right)
-            ("M-$" . split-window-below)
-            ("M-3" . delete-other-windows)
-            ("M-#" . delete-window)
-            ("M-r" . kill-word)
-            ("M-E" . wakib-backward-kill-line)
-            ("M-R" . kill-line)
-            ("M-w" . kill-whole-line)
-            ("M-<f4>" . save-buffers-kill-emacs)
-            ("M-d" . delete-backward-char)
-            ("M-f" . delete-char)
-            ("M-s" . set-mark-command)
-            ("M-S-s" . set-rectangular-region-anchor)
-            ("<C-return>" . wakib-insert-line-after)
-            ("<C-S-return>" . wakib-insert-line-before)
-            ("M-X" . pp-eval-expression)
-            ("<C-backspace>" . ig/wakib-backward-delete-word)
-            ("<C-delete>" . ig/wakib-delete-word)
-            ("<escape>" . keyboard-escape-quit)
-            ))
+  (defun ig/beginning-of-line ()
+    "Go to either the beginning of line or to the indentation.
+If the point is at the beginning of line, go to the indentation.
+Otherwise, go to whatever is closest to the left of the point."
+    (interactive)
+    (if (= 0 (current-column))
+        (back-to-indentation)
+      (let ((orig-point (point)))
+        (back-to-indentation)
+        (when (<= orig-point (point))
+          (beginning-of-line)))))
 
-    :functions (wakib-define-keys)
-    :defines (goto-address-highlight-keymap)
-    :config
-    (wakib-keys 1))
-
-  (use-package emacs
-    :ensure nil
-    :init
-    (unless overriding-terminal-local-map
-      (setq overriding-terminal-local-map (make-sparse-keymap)))
-    :bind (
-           ("C-+" . text-scale-increase)
-           ("C-=" . text-scale-increase)
-           ("C--" . text-scale-decrease)
-           ("C-/" . comment-line)
-           ("C-:" . ig/async-shell-command)
-           ("M-C-;" . eval-expression)
-           ("M-=" . count-words)
-           ;; ("<C-tab>" . ig/wakib-switch-to-last-buffer)
-           ("C-{" . hs-hide-block)
-           ("C-}" . hs-show-block)
-           
-           :map overriding-terminal-local-map
-           ("C-c" . ig/wakib-copy-without-region)
-           ("C-x" . ig/wakib-cut-without-region)
-           ("C-<mouse-1>" . ignore)
-           ("C-<mouse-2>" . ignore)
-           ("C-<mouse-3>" . ignore)
-           ("C-<down-mouse-1>" . ignore)
-           ("C-<down-mouse-2>" . ignore)
-           ("C-<down-mouse-3>" . ignore)
-           ))
-
-  ;; | Keys       | Action                                       |
-  ;; |------------+----------------------------------------------|
-  ;; | C-arrows   | Move to adjacent window                      |
-  ;; | M-S-arrows | Move current buffer to adjacent window       |
-  ;; | C-s-up     | Merge current window with window above       |
-  ;; | C-s-down   | Split current window down                    |
-  ;; | C-s-left   | Merge current window with window on the left |
-  ;; | C-s-right  | Split current window right                   |
-  ;; | s-f        | Remove all windows except current            |
-
-  ;; Use meta key for windmove
-  (windmove-default-keybindings 'meta)
+  (defun ig/temp-buffer ()
+  "Create temporary buffers with no auto-save."
+  (interactive)
+  (switch-to-buffer (generate-new-buffer "*temp*")))
 
   (defun ig/split-window-right ()
     (interactive)
@@ -432,16 +344,103 @@ and ignore-project is nil, `async-shell-command' otherwise."
       (windmove-delete-down)
       (set-window-buffer (selected-window) buffer)))
 
-  (global-set-key (kbd "C-s-<right>") 'ig/split-window-right)
-  (global-set-key (kbd "C-s-<left>") 'ig/merge-window-left)
-  (global-set-key (kbd "C-s-<down>") 'ig/split-window-down)
-  (global-set-key (kbd "C-s-<up>") 'ig/merge-window-up)
-  (global-set-key (kbd "s-f") 'delete-other-windows)
+  (use-package rebound
+    :load-path "lisp/packages/rebound"
+    :demand t
+    :commands rebound-mode
+    :custom
+    (rebound-cc-key "C-d")
+    (rebound-cx-key "C-e")
+    :config
+    (unless overriding-terminal-local-map
+      (setq overriding-terminal-local-map (make-sparse-keymap)))
+    (rebound-mode t)
+    :bind*
+    (;; Common keys
+     ("C-q" . ig/delete-or-quit)
+     ("C-w" . ig/protected-kill-buffer)
+     ("C-r" . query-replace-regexp)
+     ("C-o" . find-file)
+     ("C-s" . save-buffer)
+     ("C-a" . mark-whole-buffer)
+     ("C-f" . isearch-forward)
+     ("C-b" . switch-to-buffer)
+     ("C-." . "\C-d\C-c")
 
-  (global-set-key (kbd "M-S-<right>") 'windmove-swap-states-right)
-  (global-set-key (kbd "M-S-<left>") 'windmove-swap-states-left)
-  (global-set-key (kbd "M-S-<down>") 'windmove-swap-states-down)
-  (global-set-key (kbd "M-S-<up>") 'windmove-swap-states-up)
+     ;; Annoyances
+     ("C-<mouse-1>" . ignore)
+     ("C-<mouse-2>" . ignore)
+     ("C-<mouse-3>" . ignore)
+     ("C-<down-mouse-1>" . ignore)
+     ("C-<down-mouse-2>" . ignore)
+     ("C-<down-mouse-3>" . ignore)
+
+     :map overriding-terminal-local-map
+     ;; Essential keys
+     ("C-z" . undo-only)
+     ("C-S-z" . undo-redo) ("C-M-z" . undo-redo)
+     ("C-x" . ig/cut-without-region)
+     ("C-c" . ig/copy-without-region)
+     ("C-v" . yank)
+     
+     ;; Navigation
+     ("M-j" . left-char)
+     ("M-l" . right-char)
+     ("M-i" . previous-line)
+     ("M-k" . next-line)
+     ("M-h" . backward-word)
+     ("M-;" . forward-word)
+     ("M-u" . ig/beginning-of-line)
+     ("M-o" . move-end-of-line)
+     ("M-e" . scroll-down-command)
+     ("M-d" . scroll-up-command)
+     ("M-s" . backward-paragraph)
+     ("M-f" . forward-paragraph)
+     ("M-m" . set-mark-command))
+
+    :bind
+    (;; Editing
+     ("C-<backspace>" . ig/backward-delete-word)
+     ("M-<backspace>" . ig/backward-delete-word)
+     ("C-<delete>" . ig/forward-delete-word)
+     ("C-M-<backspace>" . ig/backward-delete-line)
+     ("C-M-<delete>" . ig/forward-delete-line)
+     
+     ;; Windows
+     ("C-4" . ig/split-window-right)
+     ("C-M-4" . ig/split-window-down)
+     ("C-M-q" . delete-window)
+     ("C-M-d" . delete-other-windows)
+     ("C-M-<left>" . windmove-left)
+     ("C-M-<right>" . windmove-right)
+     ("C-M-<up>" . windmove-up)
+     ("C-M-<down>" . windmove-down)
+     ("C-c C-<left>" . windmove-swap-states-left)
+     ("C-c C-<right>" . windmove-swap-states-right)
+     ("C-c C-<up>" . windmove-swap-states-up)
+     ("C-c C-<down>" . windmove-swap-states-down)
+
+     ;; Emacs-specific
+     ("C-/" . comment-line)
+     ("C-M-;" . ig/async-shell-command)
+     ("C-c C-;" . shell-command)
+     ("C-:" . eval-expression)
+     ("M-=" . count-words)
+     
+     :map rebound-mode-map
+     ;; Less common keys
+     ("C-S-r" . query-replace) ("C-M-r" . query-replace)
+     ("C-S-o" . revert-buffer) ("C-M-o" . revert-buffer)
+     ("C-S-s" . write-file) ("C-M-s" . write-file)
+     ("C-S-f" . isearch-backward) ("C-M-f" . isearch-backward)
+     ("C-S-b" . ibuffer) ("C-M-b" . ibuffer)
+     ("C-y" . undo-redo)
+     ("C-p" . ig/open-file-externally)
+     ("C-S-p" . ig/open-folder-externally) ("C-M-p" . ig/open-folder-externally)
+     ("C-n" . ig/temp-buffer)
+     ("C-+" . text-scale-increase)
+     ("C-=" . text-scale-increase)
+     ("C--" . text-scale-decrease)))
 
   (use-package isearch
     :ensure nil
@@ -451,20 +450,13 @@ and ignore-project is nil, `async-shell-command' otherwise."
                 ("C-S-f" . isearch-repeat-backward)
                 ("C-r" . isearch-query-replace)))
 
-  ;; Other keybindings
-  (global-set-key (kbd "C-c C-;") 'shell-command)
-  (global-set-key (kbd "C-r") 'query-replace-regexp)
-  (global-set-key (kbd "C-S-r") 'query-replace)
-
   ;; Remap mouse to click links
   (setq mouse-1-click-follows-link nil)
-  (global-set-key (kbd "C-<down-mouse-1>") nil)
-  (global-set-key (kbd "C-<mouse-1>") 'mouse-buffer-menu)
   (setq goto-address-highlight-keymap
         (let ((m (make-sparse-keymap)))
           (define-key m (kbd "<mouse-3>") 'goto-address-at-point)
           (define-key m (kbd "C-<mouse-1>") 'goto-address-at-point)
-          (define-key m (kbd "C-d C-o") 'goto-address-at-point)
+          (define-key m (kbd "C-c C-o") 'goto-address-at-point)
           m))
   ) ; Key Bindings
 

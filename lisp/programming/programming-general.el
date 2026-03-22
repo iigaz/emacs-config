@@ -92,7 +92,7 @@
 (progn
   (use-package lsp-mode
     :bind (:map lsp-mode-map
-                ("C-." . lsp-execute-code-action)
+                ("M-<enter>" . lsp-execute-code-action)
                 ("<f2>" . lsp-rename))
     :hook ((lsp-mode . lsp-enable-which-key-integration)
            (lsp-completion-mode . my/lsp-mode-setup-completion))

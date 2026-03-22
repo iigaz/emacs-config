@@ -6,6 +6,8 @@
          ("C-c M-." . jinx-languages))
   :config
   (remove-hook 'prog-mode-hook #'flyspell-prog-mode)
-  (remove-hook 'text-mode-hook #'flyspell-mode))
+  (remove-hook 'text-mode-hook #'flyspell-mode)
+  :custom
+  (jinx-languages "en_GB ru_RU"))
 
 ;;; spell-checking.el ends here
