@@ -10,7 +10,7 @@ of literate config, because I'm not always keeping it up-to-date.
 So, in a nutshell, this is a vanilla Emacs configuration that
 supports:
 - Common and intuitive key combinations for basic text manipulation;
-- (coming soon) Ergonomic and easy-to-remember text navigation keys;
+- Ergonomic and easy-to-remember text navigation keys;
 - Programming functionality on-par with VSCode.
 
 My main use-cases for Emacs are:
@@ -18,7 +18,7 @@ My main use-cases for Emacs are:
 - Browsing directories and files on local and remote devices;
 - Calling shell commands through =async-shell-command= and =compile=
   (full-blown terminal is not a priority);
-- Writing markdown for all sorts of things;
+- Writing markdown and org for all sorts of things;
 - Interacting with git repositories, as =magit= is literally the best
   git interface I know of.
 
@@ -31,17 +31,9 @@ My main use-cases for Emacs are:
    functionality.
 
 ** Short-term goals (TODO list)
-1. Get rid of wakib-keys, because they contradict LTG #4, and
-   subsequently rewrite keys from scratch;
-   - [X] Rewrite keys from scratch;
-   - [X] Move navigation keys to overriding-terminal-local-map;
-   - [X] (Optional) Create another overriding-map for CUA keys;
-   - [X] Write a package which allows rebinding main prefix keys - rebound
-   - [ ] Gather all global keys in basic-config into one piece of code;
-   - [ ] Use Emacs in terminal for a while to find and fix remaining bugs.
-2. Write a script which installs these configurations as separate
+1. Write a script which installs these configurations as separate
    .desktop files on Linux systems;
-3. Try out Embark.
+2. Try out Embark.
 
 ** Notes
 

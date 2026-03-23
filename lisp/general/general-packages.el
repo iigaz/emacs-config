@@ -137,7 +137,8 @@ with selected region. If no region is selected, continue as usual."
   :hook ((prog-mode . flyspell-prog-mode)
          (text-mode . flyspell-mode))
   :bind (:map flyspell-mode-map
-              ("C-;" . nil))) ;; Used by avy
+              ("C-;" . nil) ;; Used by avy
+              ("C-M-i" . nil))) ;; Used by format-buffer
 
 ;;; Multiple cursors
 

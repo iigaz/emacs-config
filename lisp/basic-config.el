@@ -319,9 +319,20 @@ Otherwise, go to whatever is closest to the left of the point."
           (beginning-of-line)))))
 
   (defun ig/temp-buffer ()
-  "Create temporary buffers with no auto-save."
-  (interactive)
-  (switch-to-buffer (generate-new-buffer "*temp*")))
+    "Create temporary buffers with no auto-save."
+    (interactive)
+    (switch-to-buffer (generate-new-buffer "*temp*")))
+
+  (defun ig/indent-buffer ()
+    "Indent the entire buffer."
+    (interactive)
+    (indent-region (point-min) (point-max)))
+  (defun format-buffer ()
+    "Indent the entire buffer. Replace it with a real formatter.
+When a real formatter is available, use [remap format-buffer] as a key
+binding."
+    (interactive)
+    (ig/indent-buffer))
 
   (defun ig/split-window-right ()
     (interactive)
@@ -401,8 +412,10 @@ Otherwise, go to whatever is closest to the left of the point."
     :bind
     (;; Editing
      ("C-<backspace>" . ig/backward-delete-word)
+     ("M-DEL" . ig/backward-delete-word)
      ("M-<backspace>" . ig/backward-delete-word)
      ("C-<delete>" . ig/forward-delete-word)
+     ("M-<delete>" . ig/forward-delete-word)
      ("C-M-<backspace>" . ig/backward-delete-line)
      ("C-M-<delete>" . ig/forward-delete-line)
      
@@ -421,12 +434,16 @@ Otherwise, go to whatever is closest to the left of the point."
      ("C-c C-<down>" . windmove-swap-states-down)
 
      ;; Emacs-specific
-     ("C-/" . comment-line)
+     ("<f5>" . compile)
+     ("C-/" . comment-line) ("C-_" . comment-line)
      ("C-M-;" . ig/async-shell-command)
      ("C-c C-;" . shell-command)
      ("C-:" . eval-expression)
      ("M-=" . count-words)
-     
+     ("C-p" . ig/open-file-externally) ; to be used as a "preview" button
+     ("C-S-p" . ig/open-folder-externally)
+     ("C-M-p" . ig/open-folder-externally)
+
      :map rebound-mode-map
      ;; Less common keys
      ("C-S-r" . query-replace) ("C-M-r" . query-replace)
@@ -434,9 +451,8 @@ Otherwise, go to whatever is closest to the left of the point."
      ("C-S-s" . write-file) ("C-M-s" . write-file)
      ("C-S-f" . isearch-backward) ("C-M-f" . isearch-backward)
      ("C-S-b" . ibuffer) ("C-M-b" . ibuffer)
+     ("C-S-i" . format-buffer) ("C-M-i" . format-buffer)
      ("C-y" . undo-redo)
-     ("C-p" . ig/open-file-externally)
-     ("C-S-p" . ig/open-folder-externally) ("C-M-p" . ig/open-folder-externally)
      ("C-n" . ig/temp-buffer)
      ("C-+" . text-scale-increase)
      ("C-=" . text-scale-increase)
@@ -471,11 +487,6 @@ Otherwise, go to whatever is closest to the left of the point."
   ;; Kill process when restarting async-shell-command
   (setq async-shell-command-buffer 'confirm-kill-process)
 
-  ;; Usually if I press F5 I want emacs to compile things;
-  ;; I also want to be able to redefine it in some buffers.
-  ;; If I put it in wakib-keys, it will take precedence over local bindings.
-  (global-set-key (kbd "<f5>") 'compile)
-
   ;; The following code was taken from
   ;; https://rtime.ciirc.cvut.cz/~sojka/blog/compile-on-save/
 
@@ -497,7 +508,8 @@ Otherwise, go to whatever is closest to the left of the point."
 
 
 ;;; Custom Functions
-(progn
+(use-package emacs
+  :config
   (defun xah-change-bracket-pairs (*p1 *p2 *fromType *toType)
     "Change bracket pairs from one type to another on current line or selection.
   For example, change all parenthesis () to square brackets [].
@@ -535,7 +547,6 @@ Otherwise, go to whatever is closest to the left of the point."
                (while (search-forward (elt -x 0) nil t)
                  (replace-match (elt -x 1) 'FIXEDCASE 'LITERAL)))
              -findReplaceMap))))))
-  (global-set-key (kbd "C-c b") 'xah-change-bracket-pairs)
 
   (defcustom ig/jot-config-path user-init-file
     "File to copy code snippets to."
@@ -552,8 +563,11 @@ Otherwise, go to whatever is closest to the left of the point."
           (insert region-text)
           (eval-buffer))
       (message "Please select a region to add it to the config.")))
-  (setq ig/jot-config-path (expand-file-name "local.el" user-emacs-directory))
-  (global-set-key (kbd "C-c c") 'ig/jot-config)
+  (setq ig/jot-config-path (expand-file-name "local.el"
+                                             user-emacs-directory))
+
+  :bind (("C-c b" . xah-change-bracket-pairs)
+         ("C-c c" . ig/jot-config))
   ) ; Custom Functions
 
 ;;; basic-config.el ends here

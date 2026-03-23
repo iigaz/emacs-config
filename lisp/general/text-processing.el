@@ -3,7 +3,8 @@
 ;;; Org
 (use-package org
   :ensure nil
-  ;; Open src edit window (C-c ') fullscreen
+  :bind (:map org-mode-map
+              ("C-p" . org-export-dispatch))
   :custom
   (org-src-window-setup 'current-window)
   :config
@@ -23,21 +24,29 @@
   (markdown-header-face-4 ((t (:inherit (org-level-4 markdown-header-face) :height 1.15))))
   (markdown-header-face-5 ((t (:inherit (org-level-5 markdown-header-face) :height 1.1))))
   (markdown-header-face-6 ((t (:inherit (org-level-6 markdown-header-face) :height 1.05))))
-  :config
-  (setq markdown-asymmetric-header t)
-  (setq markdown-indent-on-enter 'indent-and-new-item)
-  (setq markdown-enable-math t)
-  (setq markdown-command '("pandoc" "-d" "html" "--from=markdown+emoji" "--to=html5"))
-  (define-key markdown-mode-map (kbd "C-1") 'markdown-insert-header-atx-1)
-  (define-key markdown-mode-map (kbd "C-2") 'markdown-insert-header-atx-2)
-  (define-key markdown-mode-map (kbd "C-3") 'markdown-insert-header-atx-3)
-  (define-key markdown-mode-map (kbd "C-4") 'markdown-insert-header-atx-4)
-  (define-key markdown-mode-map (kbd "C-5") 'markdown-insert-header-atx-5)
-  (define-key markdown-mode-map (kbd "C-6") 'markdown-insert-header-atx-6)
-  (define-key markdown-mode-map (kbd "C-b") 'markdown-insert-bold)
-  (define-key markdown-mode-map (kbd "C-i") 'markdown-insert-italic)
-  (define-key markdown-mode-map (kbd "<tab>") 'markdown-cycle)
-  (add-hook 'markdown-mode-hook 'visual-line-mode))
+  :custom
+  (markdown-asymmetric-header t)
+  (markdown-indent-on-enter 'indent-and-new-item)
+  (markdown-enable-math t)
+  (markdown-command '("pandoc" "-d" "html" "--from=markdown+emoji" "--to=html5"))
+  :bind (:map markdown-mode-map
+              ("C-1" . markdown-insert-header-atx-1)
+              ("C-2" . markdown-insert-header-atx-2)
+              ("C-3" . markdown-insert-header-atx-3)
+              ("C-4" . markdown-insert-header-atx-4)
+              ("C-5" . markdown-insert-header-atx-5)
+              ("C-6" . markdown-insert-header-atx-6)
+              ("C-c C-b" . markdown-insert-bold)
+              ("C-c C-i" . markdown-insert-italic)
+              ("C-c C-l" . markdown-insert-link)
+              ("C-c C-f" . markdown-insert-image)
+              ("C-c C-m" . markdown-insert-code)
+              ("C-c C-s" . markdown-insert-strike-through)
+              ("<tab>" . markdown-cycle)
+              ("C-p" . markdown-preview)
+              ("C-S-p" . markdown-export)
+              ("C-M-p" . markdown-export))
+  :hook ((markdown-mode . visual-line-mode)))
 
 ;;; "Zen-mode"
 (use-package darkroom

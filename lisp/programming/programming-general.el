@@ -48,8 +48,9 @@
 
 ;;; Formatting
 (use-package apheleia
-  :bind (:map prog-mode-map ("C-S-i" . apheleia-format-buffer))
-  :init
+  :bind (:map prog-mode-map
+              ([remap format-buffer] . apheleia-format-buffer))
+  ;; :init
   ;; (apheleia-global-mode +1) ; enables format-on-save
   :config
   (setf (alist-get 'clang-format apheleia-formatters)
