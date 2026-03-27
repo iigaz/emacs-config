@@ -362,9 +362,10 @@ binding."
     :custom
     (rebound-cc-key "C-d")
     (rebound-cx-key "C-e")
-    :config
+    :init
     (unless overriding-terminal-local-map
       (setq overriding-terminal-local-map (make-sparse-keymap)))
+    :config
     (rebound-mode t)
     :bind*
     (;; Common keys
