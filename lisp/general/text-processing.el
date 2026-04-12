@@ -28,7 +28,7 @@
   (markdown-asymmetric-header t)
   (markdown-indent-on-enter 'indent-and-new-item)
   (markdown-enable-math t)
-  (markdown-command '("pandoc" "-d" "html" "--from=markdown+emoji" "--to=html5"))
+  (markdown-command '("pandoc" "-d" "html" "--from=markdown+emoji" "--to=html5" "--mathml"))
   :bind (:map markdown-mode-map
               ("C-1" . markdown-insert-header-atx-1)
               ("C-2" . markdown-insert-header-atx-2)

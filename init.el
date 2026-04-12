@@ -14,9 +14,17 @@
                               text-processing icons spell-checking))
                             (programming
                              ((general) programming-general
-                              programming-frontend programming-cpp))
+                              programming-cpp))
                             (main
-                             ((programming) games restclient llms test))))
+                             ((programming) games restclient llms test))
+                            (dotnet
+                             ((programming) programming-csharp))
+                            (python
+                             ((programming) programming-python))
+                            (flutter
+                             ((programming) programming-flutter))
+                            (web
+                             ((programming) programming-frontend))))
 (setq modular-config-default 'main)
 (setq modular-config-use-packages-from-load-path 't)
 (modular-config-command-line-args-process)

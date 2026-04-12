@@ -87,8 +87,8 @@
     (when (< pos (length jtsuken))
       (let ((from (aref jtsuken pos))
             (to (aref qwerty pos)))
-        (define-key key-translation-map (kbd (concat "C-" (string from))) (kbd (concat "C-" (string to))))
-        (define-key key-translation-map (kbd (concat "M-" (string from))) (kbd (concat "M-" (string to)))))
+        (dolist (prefix '("C-" "M-" "C-M-" "s-"))
+          (define-key key-translation-map (kbd (concat prefix (string from))) (kbd (concat prefix (string to))))))
       (map-jtsuken-to-qwerty jtsuken qwerty (+ 1 pos))))
   (map-jtsuken-to-qwerty
    "йцукенгшщзхъфывапролджэячсмитьбюЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖ\ЭЯЧСМИТЬБЮ№"
@@ -362,16 +362,12 @@ binding."
     :custom
     (rebound-cc-key "C-d")
     (rebound-cx-key "C-e")
-    :init
-    (unless overriding-terminal-local-map
-      (setq overriding-terminal-local-map (make-sparse-keymap)))
     :config
     (rebound-mode t)
     :bind*
     (;; Common keys
      ("C-q" . ig/delete-or-quit)
      ("C-w" . ig/protected-kill-buffer)
-     ("C-r" . query-replace-regexp)
      ("C-o" . find-file)
      ("C-s" . save-buffer)
      ("C-a" . mark-whole-buffer)
@@ -387,7 +383,6 @@ binding."
      ("C-<down-mouse-2>" . ignore)
      ("C-<down-mouse-3>" . ignore)
 
-     :map overriding-terminal-local-map
      ;; Essential keys
      ("C-z" . undo-only)
      ("C-S-z" . undo-redo) ("C-M-z" . undo-redo)
@@ -412,6 +407,7 @@ binding."
 
     :bind
     (;; Editing
+     ("C-r" . query-replace-regexp)
      ("C-<backspace>" . ig/backward-delete-word)
      ("M-DEL" . ig/backward-delete-word)
      ("M-<backspace>" . ig/backward-delete-word)
@@ -479,11 +475,8 @@ binding."
 
 ;;; Shell and Terminal
 (progn
-  ;; Open bash in ansi-term by default
-  (defvar custom-term-shell "/bin/bash")
-  (defadvice ansi-term (before force-bash)
-    (interactive (list custom-term-shell)))
-  (ad-activate 'ansi-term)
+  ;; Delay displaying buffer until there is output
+  (setq async-shell-command-display-buffer nil)
 
   ;; Kill process when restarting async-shell-command
   (setq async-shell-command-buffer 'confirm-kill-process)
